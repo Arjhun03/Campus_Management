@@ -1,10 +1,12 @@
 using Campus_Management.DTOs.Colleges;
 using Campus_Management.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Campus_Management.Controllers;
 
 [ApiController]
+[Authorize(Roles = "Admin")]
 [Route("api/[controller]")]
 public class CollegesController : ControllerBase
 {
