@@ -41,6 +41,8 @@ builder.Services
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
+builder.Services.AddScoped<IPlacementOfficerRepository, PlacementOfficerRepository>();
+builder.Services.AddScoped<IPlacementOfficerService, PlacementOfficerService>();
 
 // JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"]
