@@ -183,6 +183,37 @@ namespace Campus_Management.Migrations
                     b.ToTable("Companies");
                 });
 
+            modelBuilder.Entity("Campus_Management.Models.CompanyHR", b =>
+                {
+                    b.Property<int>("CompanyHRId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CompanyHRId"));
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ApprovedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Designation")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("CompanyHRId");
+
+                    b.ToTable("CompanyHRs");
+                });
+
             modelBuilder.Entity("Campus_Management.Models.PlacementOfficer", b =>
                 {
                     b.Property<int>("PlacementOfficerId")

@@ -16,4 +16,5 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<PlacementOfficer> PlacementOfficers { get; set; } = null!;
     public DbSet<Company> Companies { get; set; } = null!;
+    public DbSet<CompanyHR> CompanyHRs { get; set; } = null!;
 }
