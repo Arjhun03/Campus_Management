@@ -1,9 +1,14 @@
+using System.Text;
 using Campus_Management.Data;
+using Campus_Management.Models;
 using Campus_Management.Repositories;
 using Campus_Management.Repositories.Interfaces;
 using Campus_Management.Services;
 using Campus_Management.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,15 +22,95 @@ builder.Services.AddOpenApi();
 // Entity Framework Core - SQL Server
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+        builder.Configuration.GetConnectionString(
+            "DefaultConnection")));
+
+// ASP.NET Core Identity
+builder.Services
+    .AddIdentityCore<ApplicationUser>(options =>
+    {
+        options.User.RequireUniqueEmail = true;
+
+        options.Password.RequireDigit = true;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireLowercase = true;
+        options.Password.RequireNonAlphanumeric = true;
+        options.Password.RequiredLength = 8;
+    })
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddSignInManager()
+    .AddDefaultTokenProviders();
+
+// JWT Authentication
+var jwtKey = builder.Configuration["Jwt:Key"]
+             ?? throw new InvalidOperationException(
+                 "JWT key is not configured.");
+
+var jwtIssuer = builder.Configuration["Jwt:Issuer"]
+                ?? throw new InvalidOperationException(
+                    "JWT issuer is not configured.");
+
+var jwtAudience = builder.Configuration["Jwt:Audience"]
+                  ?? throw new InvalidOperationException(
+                      "JWT audience is not configured.");
+
+builder.Services
+    .AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme =
+            JwtBearerDefaults.AuthenticationScheme;
+
+        options.DefaultChallengeScheme =
+            JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters =
+            new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+
+                ValidIssuer = jwtIssuer,
+                ValidAudience = jwtAudience,
+
+                IssuerSigningKey =
+                    new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(jwtKey))
+            };
+    });
+
+builder.Services.AddAuthorization();
 
 // College Repository
-builder.Services.AddScoped<ICollegeRepository, CollegeRepository>();
+builder.Services.AddScoped<
+    ICollegeRepository,
+    CollegeRepository>();
 
 // College Service
-builder.Services.AddScoped<ICollegeService, CollegeService>();
+builder.Services.AddScoped<
+    ICollegeService,
+    CollegeService>();
+
+// Authentication Services
+builder.Services.AddScoped<
+    IJwtService,
+    JwtService>();
+
+builder.Services.AddScoped<
+    IAuthService,
+    AuthService>();
 
 var app = builder.Build();
+
+// Seed database data
+using (var scope = app.Services.CreateScope())
+{
+    await DbSeeder.SeedAsync(scope.ServiceProvider);
+}
 
 // Configure the HTTP request pipeline.
 
@@ -36,7 +121,7 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
-//app.UseHttpsRedirection();
+app.UseAuthentication();
 
 app.UseAuthorization();
 
