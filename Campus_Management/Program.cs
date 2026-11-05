@@ -43,6 +43,10 @@ builder.Services
     .AddDefaultTokenProviders();
 builder.Services.AddScoped<IPlacementOfficerRepository, PlacementOfficerRepository>();
 builder.Services.AddScoped<IPlacementOfficerService, PlacementOfficerService>();
+builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
+builder.Services.AddScoped<ICompanyService, CompanyService>();
+
+
 
 // JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"]

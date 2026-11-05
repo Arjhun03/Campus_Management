@@ -15,4 +15,5 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<College> Colleges { get; set; } = null!;
 
     public DbSet<PlacementOfficer> PlacementOfficers { get; set; } = null!;
+    public DbSet<Company> Companies { get; set; } = null!;
 }
