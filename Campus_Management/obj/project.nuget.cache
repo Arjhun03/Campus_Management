@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "ng/T61Yidsg=",
+  "success": true,
+  "projectFilePath": "/Users/arjhun_03/RiderProjects/Campus_Management/Campus_Management/Campus_Management.csproj",
+  "expectedPackageFiles": [
+    "/Users/arjhun_03/.nuget/packages/microsoft.aspnetcore.openapi/10.0.11/microsoft.aspnetcore.openapi.10.0.11.nupkg.sha512",
+    "/Users/arjhun_03/.nuget/packages/microsoft.openapi/2.7.5/microsoft.openapi.2.7.5.nupkg.sha512",
+    "/Users/arjhun_03/.nuget/packages/system.text.json/8.0.5/system.text.json.8.0.5.nupkg.sha512"
+  ],
+  "logs": []
+}
