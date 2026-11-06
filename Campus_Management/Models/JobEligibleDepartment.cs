@@ -14,3 +14,4 @@ public class JobEligibleDepartment
     [MaxLength(100)]
     public string Department { get; set; } = string.Empty;
 }
+

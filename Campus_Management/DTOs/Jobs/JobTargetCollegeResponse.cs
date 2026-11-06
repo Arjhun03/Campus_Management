@@ -10,5 +10,5 @@ public class JobTargetCollegeResponse
 
     public string CollegeName { get; set; } = string.Empty;
 
-    public string CollegeCode { get; set; } = string.Empty;
+    public string CollegeCity { get; set; } = string.Empty;
 }

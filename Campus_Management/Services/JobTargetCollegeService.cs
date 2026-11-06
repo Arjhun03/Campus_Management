@@ -1,5 +1,6 @@
 using Campus_Management.DTOs.Jobs;
 using Campus_Management.Models;
+using Campus_Management.Models.Enums;
 using Campus_Management.Repositories.Interfaces;
 using Campus_Management.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -43,25 +44,30 @@ public class JobTargetCollegeService : IJobTargetCollegeService
         var job = await _jobRepository.GetByIdAsync(jobId);
 
         if (job == null ||
-            job.Status != Models.Enums.JobStatus.Draft)
+            job.Status != JobStatus.Draft)
         {
             return null;
         }
 
-        var companyHR =
-            await _companyHRRepository.GetByUserIdAsync(userId);
+        var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
 
-        if (companyHR == null ||
-            companyHR.CompanyHRId != job.CreatedByHRId ||
-            companyHR.CompanyId != job.CompanyId)
+        if (!isAdmin)
         {
-            return null;
+            var companyHR =
+                await _companyHRRepository.GetByUserIdAsync(userId);
+
+            if (companyHR == null ||
+                companyHR.CompanyHRId != job.CreatedByHRId ||
+                companyHR.CompanyId != job.CompanyId)
+            {
+                return null;
+            }
         }
 
         var college =
             await _collegeRepository.GetByIdAsync(request.CollegeId);
 
-        if (college == null)
+        if (college == null || college.Status != CollegeStatus.Active)
         {
             return null;
         }
@@ -89,7 +95,8 @@ public class JobTargetCollegeService : IJobTargetCollegeService
             JobTargetCollegeId = target.JobTargetCollegeId,
             JobId = target.JobId,
             CollegeId = target.CollegeId,
-            CollegeName = college.CollegeName
+            CollegeName = college.CollegeName,
+            CollegeCity = college.City
         };
     }
 
@@ -97,6 +104,13 @@ public class JobTargetCollegeService : IJobTargetCollegeService
         int jobId,
         string userId)
     {
+        var user = await _userManager.FindByIdAsync(userId);
+
+        if (user == null || !user.IsActive)
+        {
+            return [];
+        }
+
         var job = await _jobRepository.GetByIdAsync(jobId);
 
         if (job == null)
@@ -104,14 +118,19 @@ public class JobTargetCollegeService : IJobTargetCollegeService
             return [];
         }
 
-        var companyHR =
-            await _companyHRRepository.GetByUserIdAsync(userId);
+        var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
 
-        if (companyHR == null ||
-            companyHR.CompanyHRId != job.CreatedByHRId ||
-            companyHR.CompanyId != job.CompanyId)
+        if (!isAdmin)
         {
-            return [];
+            var companyHR =
+                await _companyHRRepository.GetByUserIdAsync(userId);
+
+            if (companyHR == null ||
+                companyHR.CompanyHRId != job.CreatedByHRId ||
+                companyHR.CompanyId != job.CompanyId)
+            {
+                return [];
+            }
         }
 
         var targets =
@@ -140,7 +159,9 @@ public class JobTargetCollegeService : IJobTargetCollegeService
 
                 CollegeId = target.CollegeId,
 
-                CollegeName = college.CollegeName
+                CollegeName = college.CollegeName,
+
+                CollegeCity = college.City
             });
         }
 
@@ -152,22 +173,34 @@ public class JobTargetCollegeService : IJobTargetCollegeService
         int collegeId,
         string userId)
     {
-        var job = await _jobRepository.GetByIdAsync(jobId);
+        var user = await _userManager.FindByIdAsync(userId);
 
-        if (job == null ||
-            job.Status != Models.Enums.JobStatus.Draft)
+        if (user == null || !user.IsActive)
         {
             return false;
         }
 
-        var companyHR =
-            await _companyHRRepository.GetByUserIdAsync(userId);
+        var job = await _jobRepository.GetByIdAsync(jobId);
 
-        if (companyHR == null ||
-            companyHR.CompanyHRId != job.CreatedByHRId ||
-            companyHR.CompanyId != job.CompanyId)
+        if (job == null ||
+            job.Status != JobStatus.Draft)
         {
             return false;
+        }
+
+        var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+
+        if (!isAdmin)
+        {
+            var companyHR =
+                await _companyHRRepository.GetByUserIdAsync(userId);
+
+            if (companyHR == null ||
+                companyHR.CompanyHRId != job.CreatedByHRId ||
+                companyHR.CompanyId != job.CompanyId)
+            {
+                return false;
+            }
         }
 
         var target =

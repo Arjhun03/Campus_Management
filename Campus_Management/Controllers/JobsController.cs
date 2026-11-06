@@ -148,7 +148,7 @@ public class JobsController : ControllerBase
         if (!success)
         {
             return BadRequest(
-                "Job could not be published. Verify ownership, deadline, company status and targeting.");
+                "Job could not be published. If restricted to specific colleges, ensure at least one college is targeted.");
         }
 
         return Ok(
@@ -178,7 +178,7 @@ public class JobsController : ControllerBase
         if (!success)
         {
             return BadRequest(
-                "Job could not be closed.");
+                "Only the owning CompanyHR can close a published job.");
         }
 
         return Ok(
@@ -263,7 +263,7 @@ public class JobsController : ControllerBase
     }
 
     [HttpPost("{id:int}/target-colleges")]
-    [Authorize(Roles = "CompanyHR")]
+    [Authorize(Roles = "CompanyHR,Admin")]
     public async Task<ActionResult<JobTargetCollegeResponse>> AddTargetCollege(
         int id,
         TargetCollegeRequest request)
@@ -284,14 +284,14 @@ public class JobsController : ControllerBase
         if (response == null)
         {
             return BadRequest(
-                "Unable to target this college.");
+                "Unable to target this college. Verify the job is in Draft, college exists, is approved, and is not already targeted.");
         }
 
         return Ok(response);
     }
 
     [HttpGet("{id:int}/target-colleges")]
-    [Authorize(Roles = "CompanyHR")]
+    [Authorize(Roles = "CompanyHR,Admin")]
     public async Task<ActionResult<List<JobTargetCollegeResponse>>> GetTargetColleges(
         int id)
     {
@@ -311,7 +311,7 @@ public class JobsController : ControllerBase
     }
 
     [HttpDelete("{id:int}/target-colleges/{collegeId:int}")]
-    [Authorize(Roles = "CompanyHR")]
+    [Authorize(Roles = "CompanyHR,Admin")]
     public async Task<IActionResult> RemoveTargetCollege(
         int id,
         int collegeId)
@@ -332,7 +332,7 @@ public class JobsController : ControllerBase
         if (!success)
         {
             return BadRequest(
-                "Unable to remove the target college.");
+                "Unable to remove the target college. Verify the job is in Draft and ownership rules are respected.");
         }
 
         return Ok(

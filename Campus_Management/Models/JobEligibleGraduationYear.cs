@@ -13,3 +13,4 @@ public class JobEligibleGraduationYear
     [Required]
     public int GraduationYear { get; set; }
 }
+
