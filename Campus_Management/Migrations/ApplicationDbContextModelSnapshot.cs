@@ -214,6 +214,42 @@ namespace Campus_Management.Migrations
                     b.ToTable("CompanyHRs");
                 });
 
+            modelBuilder.Entity("Campus_Management.Models.JobApplication", b =>
+                {
+                    b.Property<int>("ApplicationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ApplicationId"));
+
+                    b.Property<DateTime>("AppliedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("JobId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Remarks")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ApplicationId");
+
+                    b.HasIndex("JobId");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("JobId", "StudentId")
+                        .IsUnique();
+
+                    b.ToTable("JobApplications");
+                });
+
             modelBuilder.Entity("Campus_Management.Models.JobEligibleDepartment", b =>
                 {
                     b.Property<int>("JobEligibleDepartmentId")
@@ -572,6 +608,21 @@ namespace Campus_Management.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("Campus_Management.Models.JobApplication", b =>
+                {
+                    b.HasOne("Campus_Management.Models.JobOpening", null)
+                        .WithMany()
+                        .HasForeignKey("JobId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Campus_Management.Models.Student", null)
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Campus_Management.Models.JobEligibleDepartment", b =>

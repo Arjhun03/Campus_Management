@@ -23,6 +23,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<JobEligibleDepartment> JobEligibleDepartments { get; set; } = null!;
     public DbSet<JobEligibleGraduationYear> JobEligibleGraduationYears { get; set; } = null!;
 
+    public DbSet<JobApplication> JobApplications { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -129,6 +131,32 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasOne<College>()
             .WithMany()
             .HasForeignKey(j => j.CollegeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<JobApplication>()
+            .HasIndex(a => new
+            {
+                a.JobId,
+                a.StudentId
+            })
+            .IsUnique();
+
+        builder.Entity<JobApplication>()
+            .HasIndex(a => a.JobId);
+
+        builder.Entity<JobApplication>()
+            .HasIndex(a => a.StudentId);
+
+        builder.Entity<JobApplication>()
+            .HasOne<JobOpening>()
+            .WithMany()
+            .HasForeignKey(a => a.JobId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<JobApplication>()
+            .HasOne<Student>()
+            .WithMany()
+            .HasForeignKey(a => a.StudentId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }
