@@ -20,10 +20,16 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<JobOpening> JobOpenings { get; set; } = null!;
     public DbSet<JobTargetCollege> JobTargetColleges { get; set; } = null!;
+    public DbSet<JobEligibleDepartment> JobEligibleDepartments { get; set; } = null!;
+    public DbSet<JobEligibleGraduationYear> JobEligibleGraduationYears { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+
+        builder.Entity<Student>()
+            .Property(s => s.CGPA)
+            .HasColumnType("decimal(18,2)");
 
         builder.Entity<Student>()
             .HasIndex(s => new
@@ -52,6 +58,14 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.Entity<JobOpening>()
+            .Property(j => j.SalaryPackage)
+            .HasColumnType("decimal(18,2)");
+
+        builder.Entity<JobOpening>()
+            .Property(j => j.MinimumCGPA)
+            .HasColumnType("decimal(18,2)");
+
+        builder.Entity<JobOpening>()
             .HasIndex(j => j.CompanyId);
 
         builder.Entity<JobOpening>()
@@ -68,6 +82,34 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .WithMany()
             .HasForeignKey(j => j.CreatedByHRId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<JobOpening>()
+            .HasMany(j => j.EligibleDepartments)
+            .WithOne()
+            .HasForeignKey(d => d.JobId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<JobOpening>()
+            .HasMany(j => j.EligibleGraduationYears)
+            .WithOne()
+            .HasForeignKey(y => y.JobId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<JobEligibleDepartment>()
+            .HasIndex(d => new
+            {
+                d.JobId,
+                d.Department
+            })
+            .IsUnique();
+
+        builder.Entity<JobEligibleGraduationYear>()
+            .HasIndex(y => new
+            {
+                y.JobId,
+                y.GraduationYear
+            })
+            .IsUnique();
 
         builder.Entity<JobTargetCollege>()
             .HasIndex(j => new

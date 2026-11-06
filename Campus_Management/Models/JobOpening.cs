@@ -48,4 +48,8 @@ public class JobOpening
 
     [Required]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public List<JobEligibleDepartment> EligibleDepartments { get; set; } = new();
+
+    public List<JobEligibleGraduationYear> EligibleGraduationYears { get; set; } = new();
 }

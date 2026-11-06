@@ -214,6 +214,139 @@ namespace Campus_Management.Migrations
                     b.ToTable("CompanyHRs");
                 });
 
+            modelBuilder.Entity("Campus_Management.Models.JobEligibleDepartment", b =>
+                {
+                    b.Property<int>("JobEligibleDepartmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("JobEligibleDepartmentId"));
+
+                    b.Property<string>("Department")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("JobId")
+                        .HasColumnType("int");
+
+                    b.HasKey("JobEligibleDepartmentId");
+
+                    b.HasIndex("JobId", "Department")
+                        .IsUnique();
+
+                    b.ToTable("JobEligibleDepartments");
+                });
+
+            modelBuilder.Entity("Campus_Management.Models.JobEligibleGraduationYear", b =>
+                {
+                    b.Property<int>("JobEligibleGraduationYearId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("JobEligibleGraduationYearId"));
+
+                    b.Property<int>("GraduationYear")
+                        .HasColumnType("int");
+
+                    b.Property<int>("JobId")
+                        .HasColumnType("int");
+
+                    b.HasKey("JobEligibleGraduationYearId");
+
+                    b.HasIndex("JobId", "GraduationYear")
+                        .IsUnique();
+
+                    b.ToTable("JobEligibleGraduationYears");
+                });
+
+            modelBuilder.Entity("Campus_Management.Models.JobOpening", b =>
+                {
+                    b.Property<int>("JobId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("JobId"));
+
+                    b.Property<DateTime>("ApplicationDeadline")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedByHRId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsOpenToAllColleges")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("JobDescription")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("JobTitle")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("JobType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int?>("MaximumBacklogs")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("MinimumCGPA")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("SalaryPackage")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("JobId");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("CreatedByHRId");
+
+                    b.ToTable("JobOpenings");
+                });
+
+            modelBuilder.Entity("Campus_Management.Models.JobTargetCollege", b =>
+                {
+                    b.Property<int>("JobTargetCollegeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("JobTargetCollegeId"));
+
+                    b.Property<int>("CollegeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("JobId")
+                        .HasColumnType("int");
+
+                    b.HasKey("JobTargetCollegeId");
+
+                    b.HasIndex("CollegeId");
+
+                    b.HasIndex("JobId", "CollegeId")
+                        .IsUnique();
+
+                    b.ToTable("JobTargetColleges");
+                });
+
             modelBuilder.Entity("Campus_Management.Models.PlacementOfficer", b =>
                 {
                     b.Property<int>("PlacementOfficerId")
@@ -441,6 +574,54 @@ namespace Campus_Management.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Campus_Management.Models.JobEligibleDepartment", b =>
+                {
+                    b.HasOne("Campus_Management.Models.JobOpening", null)
+                        .WithMany("EligibleDepartments")
+                        .HasForeignKey("JobId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Campus_Management.Models.JobEligibleGraduationYear", b =>
+                {
+                    b.HasOne("Campus_Management.Models.JobOpening", null)
+                        .WithMany("EligibleGraduationYears")
+                        .HasForeignKey("JobId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Campus_Management.Models.JobOpening", b =>
+                {
+                    b.HasOne("Campus_Management.Models.Company", null)
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Campus_Management.Models.CompanyHR", null)
+                        .WithMany()
+                        .HasForeignKey("CreatedByHRId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Campus_Management.Models.JobTargetCollege", b =>
+                {
+                    b.HasOne("Campus_Management.Models.College", null)
+                        .WithMany()
+                        .HasForeignKey("CollegeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Campus_Management.Models.JobOpening", null)
+                        .WithMany()
+                        .HasForeignKey("JobId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Campus_Management.Models.PlacementOfficer", b =>
                 {
                     b.HasOne("Campus_Management.Models.College", "College")
@@ -522,6 +703,13 @@ namespace Campus_Management.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Campus_Management.Models.JobOpening", b =>
+                {
+                    b.Navigation("EligibleDepartments");
+
+                    b.Navigation("EligibleGraduationYears");
                 });
 #pragma warning restore 612, 618
         }

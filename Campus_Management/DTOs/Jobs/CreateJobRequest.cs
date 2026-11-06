@@ -33,4 +33,8 @@ public class CreateJobRequest
 
     [Required]
     public bool IsOpenToAllColleges { get; set; }
+
+    public List<string> EligibleDepartments { get; set; } = new();
+
+    public List<int> EligibleGraduationYears { get; set; } = new();
 }

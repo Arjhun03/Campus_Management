@@ -17,12 +17,16 @@ public class JobRepository : IJobRepository
     public async Task<JobOpening?> GetByIdAsync(int id)
     {
         return await _context.JobOpenings
+            .Include(j => j.EligibleDepartments)
+            .Include(j => j.EligibleGraduationYears)
             .FirstOrDefaultAsync(j => j.JobId == id);
     }
 
     public async Task<List<JobOpening>> GetAllAsync()
     {
         return await _context.JobOpenings
+            .Include(j => j.EligibleDepartments)
+            .Include(j => j.EligibleGraduationYears)
             .OrderByDescending(j => j.CreatedAt)
             .ToListAsync();
     }
@@ -30,6 +34,8 @@ public class JobRepository : IJobRepository
     public async Task<List<JobOpening>> GetByCompanyIdAsync(int companyId)
     {
         return await _context.JobOpenings
+            .Include(j => j.EligibleDepartments)
+            .Include(j => j.EligibleGraduationYears)
             .Where(j => j.CompanyId == companyId)
             .OrderByDescending(j => j.CreatedAt)
             .ToListAsync();

@@ -28,4 +28,8 @@ public class JobResponse
     public JobStatus Status { get; set; }
 
     public DateTime CreatedAt { get; set; }
+
+    public List<string> EligibleDepartments { get; set; } = new();
+
+    public List<int> EligibleGraduationYears { get; set; } = new();
 }

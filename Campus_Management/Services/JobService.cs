@@ -79,7 +79,17 @@ public class JobService : IJobService
             ApplicationDeadline = request.ApplicationDeadline,
             IsOpenToAllColleges = request.IsOpenToAllColleges,
             Status = JobStatus.Draft,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            EligibleDepartments = request.EligibleDepartments
+                .Where(d => !string.IsNullOrWhiteSpace(d))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Select(d => new JobEligibleDepartment { Department = d.Trim() })
+                .ToList(),
+            EligibleGraduationYears = request.EligibleGraduationYears
+                .Where(y => y > 0)
+                .Distinct()
+                .Select(y => new JobEligibleGraduationYear { GraduationYear = y })
+                .ToList()
         };
 
         await _jobRepository.AddAsync(job);
@@ -203,6 +213,20 @@ public class JobService : IJobService
         job.MaximumBacklogs = request.MaximumBacklogs;
         job.ApplicationDeadline = request.ApplicationDeadline;
         job.IsOpenToAllColleges = request.IsOpenToAllColleges;
+
+        job.EligibleDepartments.Clear();
+        job.EligibleDepartments.AddRange(
+            request.EligibleDepartments
+                .Where(d => !string.IsNullOrWhiteSpace(d))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Select(d => new JobEligibleDepartment { JobId = job.JobId, Department = d.Trim() }));
+
+        job.EligibleGraduationYears.Clear();
+        job.EligibleGraduationYears.AddRange(
+            request.EligibleGraduationYears
+                .Where(y => y > 0)
+                .Distinct()
+                .Select(y => new JobEligibleGraduationYear { JobId = job.JobId, GraduationYear = y }));
 
         await _jobRepository.UpdateAsync(job);
 
@@ -421,6 +445,24 @@ public class JobService : IJobService
                 "Student has more active backlogs than allowed.");
         }
 
+        if (job.EligibleDepartments.Count > 0 &&
+            !job.EligibleDepartments.Any(d =>
+                string.Equals(d.Department, student.Department, StringComparison.OrdinalIgnoreCase)))
+        {
+            return Ineligible(
+                job.JobId,
+                "Student department is not eligible for this job.");
+        }
+
+        if (job.EligibleGraduationYears.Count > 0 &&
+            !job.EligibleGraduationYears.Any(y =>
+                y.GraduationYear == student.GraduationYear))
+        {
+            return Ineligible(
+                job.JobId,
+                "Student graduation year is not eligible for this job.");
+        }
+
         if (!job.IsOpenToAllColleges)
         {
             var targets =
@@ -464,6 +506,10 @@ public class JobService : IJobService
             await _companyHRRepository.GetByIdAsync(
                 job.CreatedByHRId);
 
+        var hrUser = companyHR != null
+            ? await _userManager.FindByIdAsync(companyHR.UserId)
+            : null;
+
         return new JobResponse
         {
             JobId = job.JobId,
@@ -471,7 +517,7 @@ public class JobService : IJobService
             CompanyName = company?.CompanyName ?? string.Empty,
 
             CreatedByHRId = job.CreatedByHRId,
-            CreatedByHRName = companyHR?.UserId ?? string.Empty,
+            CreatedByHRName = hrUser?.FullName ?? string.Empty,
 
             JobTitle = job.JobTitle,
             JobDescription = job.JobDescription,
@@ -483,7 +529,13 @@ public class JobService : IJobService
             ApplicationDeadline = job.ApplicationDeadline,
             IsOpenToAllColleges = job.IsOpenToAllColleges,
             Status = job.Status,
-            CreatedAt = job.CreatedAt
+            CreatedAt = job.CreatedAt,
+            EligibleDepartments = job.EligibleDepartments
+                .Select(d => d.Department)
+                .ToList(),
+            EligibleGraduationYears = job.EligibleGraduationYears
+                .Select(y => y.GraduationYear)
+                .ToList()
         };
     }
 }
