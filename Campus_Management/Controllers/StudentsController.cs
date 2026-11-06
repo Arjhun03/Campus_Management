@@ -48,7 +48,7 @@ public class StudentsController : ControllerBase
         return Ok(response);
     }
 
-    [Authorize(Roles = "PlacementOfficer")]
+    [Authorize(Roles = "PlacementOfficer,Admin")]
     [HttpPost("bulk-enroll")]
     public async Task<ActionResult<List<StudentResponse>>> BulkEnroll(
         List<EnrollStudentRequest> requests)
@@ -81,18 +81,40 @@ public class StudentsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<StudentResponse>>> GetAll()
     {
-        var students =
-            await _studentService.GetAllAsync();
+        var currentUserId =
+            User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrEmpty(currentUserId))
+        {
+            return Unauthorized();
+        }
+
+        var isAdmin = User.IsInRole("Admin");
+
+        var students = isAdmin
+            ? await _studentService.GetAllAsync()
+            : await _studentService.GetByPlacementOfficerUserIdAsync(currentUserId);
 
         return Ok(students);
     }
 
-    [Authorize(Roles = "PlacementOfficer")]
+    [Authorize(Roles = "Admin,PlacementOfficer")]
     [HttpGet("pending")]
     public async Task<ActionResult<List<StudentResponse>>> GetPending()
     {
-        var students =
-            await _studentService.GetPendingAsync();
+        var currentUserId =
+            User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrEmpty(currentUserId))
+        {
+            return Unauthorized();
+        }
+
+        var isAdmin = User.IsInRole("Admin");
+
+        var students = isAdmin
+            ? await _studentService.GetPendingAsync()
+            : await _studentService.GetPendingByPlacementOfficerUserIdAsync(currentUserId);
 
         return Ok(students);
     }
@@ -140,7 +162,7 @@ public class StudentsController : ControllerBase
         return Ok(student);
     }
 
-    [Authorize(Roles = "PlacementOfficer")]
+    [Authorize(Roles = "PlacementOfficer,Admin")]
     [HttpPut("{id:int}/approve")]
     public async Task<IActionResult> Approve(int id)
     {
@@ -168,7 +190,7 @@ public class StudentsController : ControllerBase
         return NoContent();
     }
 
-    [Authorize(Roles = "PlacementOfficer")]
+    [Authorize(Roles = "PlacementOfficer,Admin")]
     [HttpPut("{id:int}/reject")]
     public async Task<IActionResult> Reject(int id)
     {

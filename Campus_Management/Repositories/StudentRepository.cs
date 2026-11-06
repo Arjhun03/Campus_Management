@@ -42,6 +42,22 @@ public class StudentRepository : IStudentRepository
             .ToListAsync();
     }
 
+    public async Task<List<Student>> GetByCollegeIdAsync(int collegeId)
+    {
+        return await _context.Students
+            .Where(s => s.CollegeId == collegeId)
+            .OrderBy(s => s.StudentId)
+            .ToListAsync();
+    }
+
+    public async Task<List<Student>> GetPendingByCollegeIdAsync(int collegeId)
+    {
+        return await _context.Students
+            .Where(s => s.CollegeId == collegeId && s.Status == StudentStatus.Pending)
+            .OrderBy(s => s.StudentId)
+            .ToListAsync();
+    }
+
     public async Task<bool> RegisterNumberExistsAsync(
         int collegeId,
         string registerNumber)

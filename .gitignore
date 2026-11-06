@@ -1,0 +1,16 @@
+# Build output
+**/bin/
+**/obj/
+
+# Ephemeral runtime
+Library/
+.local/
+
+# IDE files
+.idea/
+.vscode/
+*.user
+*.suo
+
+# macOS
+.DS_Store

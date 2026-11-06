@@ -16,6 +16,12 @@ public interface IStudentService
 
     Task<List<StudentResponse>> GetPendingAsync();
 
+    Task<List<StudentResponse>> GetByPlacementOfficerUserIdAsync(
+        string placementOfficerUserId);
+
+    Task<List<StudentResponse>> GetPendingByPlacementOfficerUserIdAsync(
+        string placementOfficerUserId);
+
     Task<StudentResponse?> GetByIdAsync(int id);
 
     Task<StudentResponse?> GetByUserIdAsync(string userId);

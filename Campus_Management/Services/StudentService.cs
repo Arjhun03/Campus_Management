@@ -11,32 +11,73 @@ public class StudentService : IStudentService
 {
     private readonly IStudentRepository _studentRepository;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly ICollegeRepository _collegeRepository;
+    private readonly IPlacementOfficerRepository _placementOfficerRepository;
 
     public StudentService(
         IStudentRepository studentRepository,
-        UserManager<ApplicationUser> userManager)
+        UserManager<ApplicationUser> userManager,
+        RoleManager<IdentityRole> roleManager,
+        ICollegeRepository collegeRepository,
+        IPlacementOfficerRepository placementOfficerRepository)
     {
         _studentRepository = studentRepository;
         _userManager = userManager;
+        _roleManager = roleManager;
+        _collegeRepository = collegeRepository;
+        _placementOfficerRepository = placementOfficerRepository;
     }
 
     public async Task<StudentResponse?> EnrollAsync(
         EnrollStudentRequest request,
         string placementOfficerUserId)
     {
-        var placementOfficer =
+        var officerUser =
             await _userManager.FindByIdAsync(placementOfficerUserId);
 
-        if (placementOfficer == null ||
-            !placementOfficer.IsActive)
+        if (officerUser == null ||
+            !officerUser.IsActive)
         {
             return null;
         }
 
-        if (request.PlacementOfficerId <= 0 ||
-            request.CollegeId <= 0)
+        var isPlacementOfficer =
+            await _userManager.IsInRoleAsync(officerUser, "PlacementOfficer");
+
+        if (isPlacementOfficer)
         {
-            return null;
+            var officer =
+                await _placementOfficerRepository.GetByEmailAsync(
+                    officerUser.Email ?? string.Empty);
+
+            if (officer == null ||
+                officer.CollegeId != request.CollegeId)
+            {
+                return null;
+            }
+
+            request.PlacementOfficerId = officer.PlacementOfficerId;
+        }
+        else
+        {
+            var college =
+                await _collegeRepository.GetByIdAsync(request.CollegeId);
+
+            if (college == null)
+            {
+                return null;
+            }
+
+            var officer =
+                await _placementOfficerRepository.GetByIdAsync(
+                    request.PlacementOfficerId);
+
+            if (officer == null ||
+                officer.CollegeId != request.CollegeId)
+            {
+                return null;
+            }
         }
 
         if (await _studentRepository.RegisterNumberExistsAsync(
@@ -74,10 +115,18 @@ public class StudentService : IStudentService
             return null;
         }
 
+        const string studentRole = "Student";
+
+        if (!await _roleManager.RoleExistsAsync(studentRole))
+        {
+            await _roleManager.CreateAsync(
+                new IdentityRole(studentRole));
+        }
+
         var roleResult =
             await _userManager.AddToRoleAsync(
                 user,
-                "Student");
+                studentRole);
 
         if (!roleResult.Succeeded)
         {
@@ -174,6 +223,82 @@ public class StudentService : IStudentService
         return responses;
     }
 
+    public async Task<List<StudentResponse>> GetByPlacementOfficerUserIdAsync(
+        string placementOfficerUserId)
+    {
+        var officerUser =
+            await _userManager.FindByIdAsync(placementOfficerUserId);
+
+        if (officerUser == null)
+        {
+            return new List<StudentResponse>();
+        }
+
+        var officer =
+            await _placementOfficerRepository.GetByEmailAsync(
+                officerUser.Email ?? string.Empty);
+
+        if (officer == null)
+        {
+            return new List<StudentResponse>();
+        }
+
+        var students =
+            await _studentRepository.GetByCollegeIdAsync(officer.CollegeId);
+
+        var responses = new List<StudentResponse>();
+
+        foreach (var student in students)
+        {
+            var response = await BuildResponseAsync(student);
+
+            if (response != null)
+            {
+                responses.Add(response);
+            }
+        }
+
+        return responses;
+    }
+
+    public async Task<List<StudentResponse>> GetPendingByPlacementOfficerUserIdAsync(
+        string placementOfficerUserId)
+    {
+        var officerUser =
+            await _userManager.FindByIdAsync(placementOfficerUserId);
+
+        if (officerUser == null)
+        {
+            return new List<StudentResponse>();
+        }
+
+        var officer =
+            await _placementOfficerRepository.GetByEmailAsync(
+                officerUser.Email ?? string.Empty);
+
+        if (officer == null)
+        {
+            return new List<StudentResponse>();
+        }
+
+        var students =
+            await _studentRepository.GetPendingByCollegeIdAsync(officer.CollegeId);
+
+        var responses = new List<StudentResponse>();
+
+        foreach (var student in students)
+        {
+            var response = await BuildResponseAsync(student);
+
+            if (response != null)
+            {
+                responses.Add(response);
+            }
+        }
+
+        return responses;
+    }
+
     public async Task<StudentResponse?> GetByIdAsync(int id)
     {
         var student =
@@ -213,14 +338,29 @@ public class StudentService : IStudentService
             return false;
         }
 
-        var placementOfficer =
-            await _userManager.FindByIdAsync(
-                placementOfficerUserId);
+        var officerUser =
+            await _userManager.FindByIdAsync(placementOfficerUserId);
 
-        if (placementOfficer == null ||
-            !placementOfficer.IsActive)
+        if (officerUser == null ||
+            !officerUser.IsActive)
         {
             return false;
+        }
+
+        var isPlacementOfficer =
+            await _userManager.IsInRoleAsync(officerUser, "PlacementOfficer");
+
+        if (isPlacementOfficer)
+        {
+            var officer =
+                await _placementOfficerRepository.GetByEmailAsync(
+                    officerUser.Email ?? string.Empty);
+
+            if (officer == null ||
+                officer.CollegeId != student.CollegeId)
+            {
+                return false;
+            }
         }
 
         student.Status = StudentStatus.Approved;
@@ -261,14 +401,29 @@ public class StudentService : IStudentService
             return false;
         }
 
-        var placementOfficer =
-            await _userManager.FindByIdAsync(
-                placementOfficerUserId);
+        var officerUser =
+            await _userManager.FindByIdAsync(placementOfficerUserId);
 
-        if (placementOfficer == null ||
-            !placementOfficer.IsActive)
+        if (officerUser == null ||
+            !officerUser.IsActive)
         {
             return false;
+        }
+
+        var isPlacementOfficer =
+            await _userManager.IsInRoleAsync(officerUser, "PlacementOfficer");
+
+        if (isPlacementOfficer)
+        {
+            var officer =
+                await _placementOfficerRepository.GetByEmailAsync(
+                    officerUser.Email ?? string.Empty);
+
+            if (officer == null ||
+                officer.CollegeId != student.CollegeId)
+            {
+                return false;
+            }
         }
 
         student.Status = StudentStatus.Rejected;
@@ -390,6 +545,13 @@ public class StudentService : IStudentService
             return null;
         }
 
+        var college =
+            await _collegeRepository.GetByIdAsync(student.CollegeId);
+
+        var officer =
+            await _placementOfficerRepository.GetByIdAsync(
+                student.PlacementOfficerId);
+
         return new StudentResponse
         {
             StudentId = student.StudentId,
@@ -398,7 +560,9 @@ public class StudentService : IStudentService
             Email = user.Email ?? string.Empty,
             PhoneNumber = user.PhoneNumber ?? string.Empty,
             CollegeId = student.CollegeId,
+            CollegeName = college?.CollegeName ?? string.Empty,
             PlacementOfficerId = student.PlacementOfficerId,
+            PlacementOfficerName = officer?.FullName ?? string.Empty,
             RegisterNumber = student.RegisterNumber,
             Department = student.Department,
             Degree = student.Degree,

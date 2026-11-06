@@ -42,30 +42,12 @@ builder.Services
     .AddSignInManager()
     .AddDefaultTokenProviders();
 
-builder.Services.AddScoped<IPlacementOfficerRepository, PlacementOfficerRepository>();
-builder.Services.AddScoped<IPlacementOfficerService, PlacementOfficerService>();
-
-builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
-builder.Services.AddScoped<ICompanyService, CompanyService>();
-
-builder.Services.AddScoped<ICompanyHRRepository, CompanyHRRepository>();
-builder.Services.AddScoped<ICompanyHRService, CompanyHRService>();
-
-builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
-builder.Services.AddScoped<ICompanyService, CompanyService>();
-
-
-builder.Services.AddScoped<ICompanyHRRepository, CompanyHRRepository>();
-builder.Services.AddScoped<ICompanyHRService, CompanyHRService>();
-
-builder.Services.AddScoped<IStudentRepository, StudentRepository>();
-builder.Services.AddScoped<IStudentService, StudentService>();
-
-builder.Services.AddScoped<IJwtService, JwtService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-
+// Application Services & Repositories
 builder.Services.AddScoped<ICollegeRepository, CollegeRepository>();
 builder.Services.AddScoped<ICollegeService, CollegeService>();
+
+builder.Services.AddScoped<IPlacementOfficerRepository, PlacementOfficerRepository>();
+builder.Services.AddScoped<IPlacementOfficerService, PlacementOfficerService>();
 
 builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
@@ -77,9 +59,9 @@ builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IStudentService, StudentService>();
 
 builder.Services.AddScoped<IJobRepository, JobRepository>();
-builder.Services.AddScoped<IJobTargetCollegeRepository, JobTargetCollegeRepository>();
-
 builder.Services.AddScoped<IJobService, JobService>();
+
+builder.Services.AddScoped<IJobTargetCollegeRepository, JobTargetCollegeRepository>();
 builder.Services.AddScoped<IJobTargetCollegeService, JobTargetCollegeService>();
 
 builder.Services.AddScoped<IJwtService, JwtService>();
@@ -127,25 +109,6 @@ builder.Services
     });
 
 builder.Services.AddAuthorization();
-
-// College Repository
-builder.Services.AddScoped<
-    ICollegeRepository,
-    CollegeRepository>();
-
-// College Service
-builder.Services.AddScoped<
-    ICollegeService,
-    CollegeService>();
-
-// Authentication Services
-builder.Services.AddScoped<
-    IJwtService,
-    JwtService>();
-
-builder.Services.AddScoped<
-    IAuthService,
-    AuthService>();
 
 var app = builder.Build();
 

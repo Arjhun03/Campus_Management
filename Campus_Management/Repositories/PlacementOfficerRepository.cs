@@ -30,6 +30,13 @@ public class PlacementOfficerRepository : IPlacementOfficerRepository
                 p.PlacementOfficerId == placementOfficerId);
     }
 
+    public async Task<PlacementOfficer?> GetByEmailAsync(string email)
+    {
+        return await _context.PlacementOfficers
+            .Include(p => p.College)
+            .FirstOrDefaultAsync(p => p.Email == email);
+    }
+
     public async Task<PlacementOfficer> AddAsync(
         PlacementOfficer placementOfficer)
     {

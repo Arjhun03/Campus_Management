@@ -8,6 +8,8 @@ public interface IPlacementOfficerRepository
 
     Task<PlacementOfficer?> GetByIdAsync(int placementOfficerId);
 
+    Task<PlacementOfficer?> GetByEmailAsync(string email);
+
     Task<PlacementOfficer> AddAsync(PlacementOfficer placementOfficer);
 
     Task UpdateAsync(PlacementOfficer placementOfficer);

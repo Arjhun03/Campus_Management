@@ -12,6 +12,10 @@ public interface IStudentRepository
 
     Task<List<Student>> GetPendingAsync();
 
+    Task<List<Student>> GetByCollegeIdAsync(int collegeId);
+
+    Task<List<Student>> GetPendingByCollegeIdAsync(int collegeId);
+
     Task<bool> RegisterNumberExistsAsync(
         int collegeId,
         string registerNumber);
