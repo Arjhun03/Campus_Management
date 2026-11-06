@@ -214,6 +214,47 @@ namespace Campus_Management.Migrations
                     b.ToTable("CompanyHRs");
                 });
 
+            modelBuilder.Entity("Campus_Management.Models.InterviewRound", b =>
+                {
+                    b.Property<int>("RoundId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RoundId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("DriveId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RoundName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("RoundNumber")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RoundType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("RoundId");
+
+                    b.HasIndex("DriveId");
+
+                    b.HasIndex("DriveId", "RoundNumber")
+                        .IsUnique();
+
+                    b.ToTable("InterviewRounds");
+                });
+
             modelBuilder.Entity("Campus_Management.Models.JobApplication", b =>
                 {
                     b.Property<int>("ApplicationId")
@@ -662,6 +703,15 @@ namespace Campus_Management.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("Campus_Management.Models.InterviewRound", b =>
+                {
+                    b.HasOne("Campus_Management.Models.RecruitmentDrive", null)
+                        .WithMany()
+                        .HasForeignKey("DriveId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Campus_Management.Models.JobApplication", b =>

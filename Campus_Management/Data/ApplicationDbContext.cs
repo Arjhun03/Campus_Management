@@ -26,6 +26,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<JobApplication> JobApplications { get; set; } = null!;
 
     public DbSet<RecruitmentDrive> RecruitmentDrives { get; set; } = null!;
+    public DbSet<InterviewRound> InterviewRounds { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -178,5 +179,22 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .WithMany()
             .HasForeignKey(d => d.CompanyId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<InterviewRound>()
+            .HasIndex(r => new
+            {
+                r.DriveId,
+                r.RoundNumber
+            })
+            .IsUnique();
+
+        builder.Entity<InterviewRound>()
+            .HasIndex(r => r.DriveId);
+
+        builder.Entity<InterviewRound>()
+            .HasOne<RecruitmentDrive>()
+            .WithMany()
+            .HasForeignKey(r => r.DriveId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
