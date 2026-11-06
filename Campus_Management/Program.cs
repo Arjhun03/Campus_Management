@@ -73,6 +73,9 @@ builder.Services.AddScoped<IRecruitmentDriveService, RecruitmentDriveService>();
 builder.Services.AddScoped<IInterviewRoundRepository, InterviewRoundRepository>();
 builder.Services.AddScoped<IInterviewRoundService, InterviewRoundService>();
 
+builder.Services.AddScoped<IInterviewScheduleRepository, InterviewScheduleRepository>();
+builder.Services.AddScoped<IInterviewScheduleService, InterviewScheduleService>();
+
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 

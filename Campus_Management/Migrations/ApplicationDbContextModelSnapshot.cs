@@ -255,6 +255,68 @@ namespace Campus_Management.Migrations
                     b.ToTable("InterviewRounds");
                 });
 
+            modelBuilder.Entity("Campus_Management.Models.InterviewSchedule", b =>
+                {
+                    b.Property<int>("ScheduleId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ScheduleId"));
+
+                    b.Property<int>("ApplicationId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Feedback")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("InterviewerEmail")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("InterviewerName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("MeetingLinkOrLocation")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("RoundId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ScheduledEndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ScheduledStartTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal?>("Score")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("ScheduleId");
+
+                    b.HasIndex("ApplicationId");
+
+                    b.HasIndex("RoundId");
+
+                    b.HasIndex("RoundId", "ApplicationId")
+                        .IsUnique();
+
+                    b.ToTable("InterviewSchedules");
+                });
+
             modelBuilder.Entity("Campus_Management.Models.JobApplication", b =>
                 {
                     b.Property<int>("ApplicationId")
@@ -710,6 +772,21 @@ namespace Campus_Management.Migrations
                     b.HasOne("Campus_Management.Models.RecruitmentDrive", null)
                         .WithMany()
                         .HasForeignKey("DriveId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Campus_Management.Models.InterviewSchedule", b =>
+                {
+                    b.HasOne("Campus_Management.Models.JobApplication", null)
+                        .WithMany()
+                        .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Campus_Management.Models.InterviewRound", null)
+                        .WithMany()
+                        .HasForeignKey("RoundId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
