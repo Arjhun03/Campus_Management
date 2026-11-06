@@ -413,6 +413,60 @@ namespace Campus_Management.Migrations
                     b.ToTable("PlacementOfficers");
                 });
 
+            modelBuilder.Entity("Campus_Management.Models.RecruitmentDrive", b =>
+                {
+                    b.Property<int>("DriveId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DriveId"));
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DriveDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DriveMode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("DriveName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Instructions")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int>("JobId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Venue")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.HasKey("DriveId");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("JobId");
+
+                    b.ToTable("RecruitmentDrives");
+                });
+
             modelBuilder.Entity("Campus_Management.Models.Student", b =>
                 {
                     b.Property<int>("StudentId")
@@ -682,6 +736,21 @@ namespace Campus_Management.Migrations
                         .IsRequired();
 
                     b.Navigation("College");
+                });
+
+            modelBuilder.Entity("Campus_Management.Models.RecruitmentDrive", b =>
+                {
+                    b.HasOne("Campus_Management.Models.Company", null)
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Campus_Management.Models.JobOpening", null)
+                        .WithMany()
+                        .HasForeignKey("JobId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Campus_Management.Models.Student", b =>

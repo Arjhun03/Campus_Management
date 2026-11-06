@@ -67,6 +67,9 @@ builder.Services.AddScoped<IJobTargetCollegeService, JobTargetCollegeService>();
 builder.Services.AddScoped<IJobApplicationRepository, JobApplicationRepository>();
 builder.Services.AddScoped<IJobApplicationService, JobApplicationService>();
 
+builder.Services.AddScoped<IRecruitmentDriveRepository, RecruitmentDriveRepository>();
+builder.Services.AddScoped<IRecruitmentDriveService, RecruitmentDriveService>();
+
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
