@@ -1,5 +1,7 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using Campus_Management.Data;
+using Campus_Management.Middlewares;
 using Campus_Management.Models;
 using Campus_Management.Repositories;
 using Campus_Management.Repositories.Interfaces;
@@ -7,6 +9,7 @@ using Campus_Management.Services;
 using Campus_Management.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
@@ -125,6 +128,29 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
+// Security: Rate Limiting & CORS
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddFixedWindowLimiter("AuthPolicy", opt =>
+    {
+        opt.PermitLimit = 100;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 0;
+    });
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("DefaultCorsPolicy", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 // Seed database data
@@ -135,12 +161,18 @@ using (var scope = app.Services.CreateScope())
 
 // Configure the HTTP request pipeline.
 
+app.UseGlobalExceptionHandler();
+app.UseSecurityHeaders();
+app.UseCors("DefaultCorsPolicy");
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 
     app.MapScalarApiReference();
 }
+
+app.UseRateLimiter();
 
 app.UseAuthentication();
 

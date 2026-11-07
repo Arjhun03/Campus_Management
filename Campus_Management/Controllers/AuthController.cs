@@ -2,12 +2,14 @@ using Campus_Management.DTOs.Auth;
 using Campus_Management.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 
 namespace Campus_Management.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[EnableRateLimiting("AuthPolicy")]
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
