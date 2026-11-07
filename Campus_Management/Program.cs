@@ -168,13 +168,15 @@ app.UseGlobalExceptionHandler();
 app.UseSecurityHeaders();
 app.UseCors("DefaultCorsPolicy");
 
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 
     app.MapScalarApiReference();
 
-    app.MapGet("/", () => Results.Redirect("/scalar/v1"));
     app.MapGet("/swagger", () => Results.Redirect("/scalar/v1"));
 }
 
@@ -185,5 +187,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapFallbackToFile("index.html");
 
 app.Run();

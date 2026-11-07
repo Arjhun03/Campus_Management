@@ -16,12 +16,69 @@ interface AuthResponse {
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+    <!-- STATE 1: NOT LOGGED IN -> DEDICATED LOGIN PAGE -->
+    <div *ngIf="!token()" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #f8fafc; padding: 20px;">
+      <div style="width: 100%; max-width: 440px; background: white; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); padding: 32px;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <div style="font-size: 40px; line-height: 1; margin-bottom: 12px;">🎓</div>
+          <h1 style="font-size: 22px; font-weight: 700; color: #0f172a;">Campus Management</h1>
+          <p style="font-size: 13px; color: #64748b; margin-top: 4px;">Sign in to test and verify the placement system</p>
+        </div>
+
+        <!-- Manual Login Form -->
+        <form (submit)="login(); $event.preventDefault()">
+          <div style="margin-bottom: 14px;">
+            <label style="font-size: 12px; font-weight: 600; color: #334155; display: block; margin-bottom: 4px;">Email Address</label>
+            <input [(ngModel)]="loginEmail" name="email" type="email" placeholder="e.g. admin@gmail.com" style="width: 100%;" required />
+          </div>
+
+          <div style="margin-bottom: 18px;">
+            <label style="font-size: 12px; font-weight: 600; color: #334155; display: block; margin-bottom: 4px;">Password</label>
+            <input [(ngModel)]="loginPassword" name="password" type="password" placeholder="••••••••" style="width: 100%;" required />
+          </div>
+
+          <button type="submit" class="btn-primary" style="width: 100%; padding: 10px; font-size: 14px;" [disabled]="authLoading()">
+            {{ authLoading() ? 'Authenticating...' : 'Sign In' }}
+          </button>
+        </form>
+
+        <div *ngIf="authError()" style="margin-top: 14px; padding: 10px 14px; background: #fee2e2; color: #dc2626; border-radius: 6px; font-size: 12px; text-align: center;">
+          {{ authError() }}
+        </div>
+
+        <!-- 1-Click Role Login for Quick Testing -->
+        <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+          <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 10px; text-align: center; letter-spacing: 0.5px;">
+            ⚡ 1-Click Role Sign In
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+            <button type="button" class="btn-secondary btn-sm" (click)="quickLogin('admin@gmail.com', 'Admin@123')">
+              👑 Admin
+            </button>
+            <button type="button" class="btn-secondary btn-sm" (click)="quickLogin('sarah.hr@tcs.com', 'HrPassword@123')">
+              🏢 Company HR
+            </button>
+            <button type="button" class="btn-secondary btn-sm" (click)="quickLogin('arun.cse@nit.edu', 'Student@123')">
+              🎓 Student
+            </button>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 16px;">
+          <a href="/scalar/v1" target="_blank" style="font-size: 12px; color: #2563eb; font-weight: 500;">
+            📚 Open Scalar OpenAPI Documentation ↗
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATE 2: LOGGED IN -> FULL TEST WORKSPACE -->
+    <div *ngIf="token()" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
       <!-- Header -->
       <header style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 16px; margin-bottom: 20px;">
         <div>
           <h1 style="font-size: 20px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px;">
-            🎓 Campus Management — Minimal Test UI
+            🎓 Campus Management — Testing Workspace
           </h1>
           <p style="font-size: 12px; color: #64748b; margin-top: 2px;">
             API Server: <span style="font-family: monospace; color: #2563eb;">{{ apiUrl() }}</span>
@@ -29,42 +86,19 @@ interface AuthResponse {
         </div>
 
         <!-- Auth Status & Controls -->
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <ng-container *ngIf="token(); else loginButtons">
-            <div style="text-align: right;">
-              <div style="font-weight: 600; font-size: 13px;">{{ currentUser()?.fullName }}</div>
-              <div style="font-size: 11px; color: #64748b;">
-                {{ currentUser()?.email }} · <span class="badge badge-purple">{{ userRole() }}</span>
-              </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <a href="/scalar/v1" target="_blank" class="btn-secondary btn-sm" style="display: flex; align-items: center; gap: 4px;">
+            📚 Scalar API Docs ↗
+          </a>
+          <div style="text-align: right;">
+            <div style="font-weight: 600; font-size: 13px;">{{ currentUser()?.fullName }}</div>
+            <div style="font-size: 11px; color: #64748b;">
+              {{ currentUser()?.email }} · <span class="badge badge-purple">{{ userRole() }}</span>
             </div>
-            <button class="btn-danger btn-sm" (click)="logout()">Logout</button>
-          </ng-container>
-
-          <ng-template #loginButtons>
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <span style="font-size: 12px; color: #64748b;">Quick Login:</span>
-              <button class="btn-secondary btn-sm" (click)="quickLogin('admin@gmail.com', 'Admin@123')">Admin</button>
-              <button class="btn-secondary btn-sm" (click)="quickLogin('sarah.hr@tcs.com', 'HrPassword@123')">Company HR</button>
-              <button class="btn-secondary btn-sm" (click)="quickLogin('arun.cse@nit.edu', 'Student@123')">Student</button>
-              <button class="btn-primary btn-sm" (click)="showCustomLogin.set(!showCustomLogin())">Custom...</button>
-            </div>
-          </ng-template>
+          </div>
+          <button class="btn-danger btn-sm" (click)="logout()">Sign Out</button>
         </div>
       </header>
-
-      <!-- Custom Login Drawer -->
-      <div *ngIf="showCustomLogin() && !token()" class="card" style="background: #f1f5f9; border-left: 4px solid #2563eb;">
-        <h3 style="font-size: 14px; margin-bottom: 10px;">Login with Custom Credentials</h3>
-        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-          <input [(ngModel)]="loginEmail" placeholder="Email (e.g. user@example.com)" style="width: 250px;" />
-          <input [(ngModel)]="loginPassword" type="password" placeholder="Password" style="width: 200px;" />
-          <button class="btn-primary" (click)="login()" [disabled]="authLoading()">
-            {{ authLoading() ? 'Logging in...' : 'Sign In' }}
-          </button>
-          <button class="btn-secondary" (click)="showCustomLogin.set(false)">Cancel</button>
-          <span *ngIf="authError()" style="color: #dc2626; font-size: 12px;">{{ authError() }}</span>
-        </div>
-      </div>
 
       <!-- Navigation Tabs -->
       <nav style="display: flex; gap: 8px; border-bottom: 1px solid #e2e8f0; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px;">
@@ -132,7 +166,7 @@ interface AuthResponse {
           </div>
         </div>
 
-        <!-- Student Placement Summary (if logged in as student) -->
+        <!-- Student Placement Summary -->
         <div *ngIf="studentReport()" class="card">
           <h3 style="font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 12px; text-transform: uppercase;">
             My Placement Summary ({{ studentReport().studentName }})
@@ -165,7 +199,7 @@ interface AuthResponse {
           </div>
         </div>
 
-        <!-- Company Recruitment Report (if HR) -->
+        <!-- Company Recruitment Report -->
         <div *ngIf="companyReport()" class="card">
           <h3 style="font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 12px; text-transform: uppercase;">
             Company Recruitment Overview ({{ companyReport().companyName }})
@@ -224,7 +258,7 @@ interface AuthResponse {
                 </td>
               </tr>
               <tr *ngIf="colleges().length === 0">
-                <td colspan="5" style="text-align: center; color: #64748b; padding: 20px;">No colleges loaded. Click Refresh or Sign in.</td>
+                <td colspan="5" style="text-align: center; color: #64748b; padding: 20px;">No colleges loaded.</td>
               </tr>
             </tbody>
           </table>
@@ -491,7 +525,6 @@ export class App {
   currentUser = signal<any>(null);
   userRole = signal<string>('Guest');
 
-  showCustomLogin = signal(false);
   authLoading = signal(false);
   authError = signal('');
   loginEmail = '';
@@ -526,16 +559,17 @@ export class App {
   consoleResponse = signal<any>(null);
 
   constructor() {
-    const savedToken = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedToken && savedUser) {
-      this.token.set(savedToken);
-      const user = JSON.parse(savedUser);
-      this.currentUser.set(user);
-      this.userRole.set(user.roles?.[0] || 'User');
+    if (typeof localStorage !== 'undefined') {
+      const savedToken = localStorage.getItem('token');
+      const savedUser = localStorage.getItem('currentUser');
+      if (savedToken && savedUser) {
+        this.token.set(savedToken);
+        const user = JSON.parse(savedUser);
+        this.currentUser.set(user);
+        this.userRole.set(user.roles?.[0] || 'User');
+        this.loadReports();
+      }
     }
-
-    this.loadReports();
   }
 
   setTab(tab: 'dashboard' | 'colleges' | 'companies' | 'jobs' | 'applications' | 'interviews' | 'api-console') {
@@ -574,15 +608,16 @@ export class App {
         this.token.set(res.token);
         this.currentUser.set(res);
         this.userRole.set(res.roles[0] || 'User');
-        localStorage.setItem('token', res.token);
-        localStorage.setItem('currentUser', JSON.stringify(res));
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('token', res.token);
+          localStorage.setItem('currentUser', JSON.stringify(res));
+        }
         this.authLoading.set(false);
-        this.showCustomLogin.set(false);
         this.loadReports();
       },
       error: (err) => {
         this.authLoading.set(false);
-        this.authError.set(err.error?.message || 'Login failed.');
+        this.authError.set(err.error?.message || 'Login failed. Please check credentials.');
       }
     });
   }
@@ -591,25 +626,24 @@ export class App {
     this.token.set('');
     this.currentUser.set(null);
     this.userRole.set('Guest');
-    localStorage.removeItem('token');
-    localStorage.removeItem('currentUser');
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('currentUser');
+    }
     this.platformReport.set(null);
     this.studentReport.set(null);
     this.companyReport.set(null);
   }
 
   loadReports() {
-    // Platform overview (Admin)
     this.http.get(`${this.apiUrl()}/api/reports/platform-overview`, { headers: this.getHeaders() })
       .subscribe({ next: (data) => this.platformReport.set(data), error: () => this.platformReport.set(null) });
 
-    // Student summary (Student)
     if (this.userRole() === 'Student') {
       this.http.get(`${this.apiUrl()}/api/reports/student-placement`, { headers: this.getHeaders() })
         .subscribe({ next: (data) => this.studentReport.set(data), error: () => this.studentReport.set(null) });
     }
 
-    // Company report (CompanyHR)
     if (this.userRole() === 'CompanyHR') {
       this.http.get(`${this.apiUrl()}/api/reports/company-recruitment`, { headers: this.getHeaders() })
         .subscribe({ next: (data) => this.companyReport.set(data), error: () => this.companyReport.set(null) });
