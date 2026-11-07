@@ -5,7 +5,7 @@ namespace Campus_Management.Services.Interfaces;
 
 public interface IApplicationStatusHistoryService
 {
-    Task<List<ApplicationStatusHistoryResponse>> GetByApplicationIdAsync(
+    Task<List<ApplicationStatusHistoryResponse>?> GetByApplicationIdAsync(
         int applicationId,
         string currentUserId,
         string role);

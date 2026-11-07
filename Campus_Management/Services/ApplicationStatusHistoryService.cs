@@ -35,7 +35,7 @@ public class ApplicationStatusHistoryService : IApplicationStatusHistoryService
         _userManager = userManager;
     }
 
-    public async Task<List<ApplicationStatusHistoryResponse>> GetByApplicationIdAsync(
+    public async Task<List<ApplicationStatusHistoryResponse>?> GetByApplicationIdAsync(
         int applicationId,
         string currentUserId,
         string role)
@@ -43,13 +43,13 @@ public class ApplicationStatusHistoryService : IApplicationStatusHistoryService
         var application = await _applicationRepository.GetByIdAsync(applicationId);
         if (application == null)
         {
-            return new List<ApplicationStatusHistoryResponse>();
+            return null;
         }
 
         var hasAccess = await HasAccessToApplicationAsync(application, currentUserId, role);
         if (!hasAccess)
         {
-            return new List<ApplicationStatusHistoryResponse>();
+            return null;
         }
 
         var histories = await _historyRepository.GetByApplicationIdAsync(applicationId);

@@ -18,6 +18,7 @@ public class ApplicationStatusHistoriesController : ControllerBase
         _historyService = historyService;
     }
 
+    [HttpGet("~/api/applications/{applicationId:int}/history")]
     [HttpGet("application/{applicationId:int}")]
     public async Task<ActionResult<List<ApplicationStatusHistoryResponse>>> GetByApplicationId(int applicationId)
     {
@@ -32,6 +33,14 @@ public class ApplicationStatusHistoriesController : ControllerBase
             applicationId,
             currentUserId,
             role);
+
+        if (histories == null)
+        {
+            return NotFound(new
+            {
+                message = "Application not found or access denied."
+            });
+        }
 
         return Ok(histories);
     }
