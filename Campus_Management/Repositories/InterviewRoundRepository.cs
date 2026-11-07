@@ -28,6 +28,17 @@ public class InterviewRoundRepository : IInterviewRoundRepository
             .ToListAsync();
     }
 
+    public async Task<List<InterviewRound>> GetByJobIdAsync(int jobId)
+    {
+        return await _context.InterviewRounds
+            .Join(_context.RecruitmentDrives.Where(d => d.JobId == jobId),
+                r => r.DriveId,
+                d => d.DriveId,
+                (r, d) => r)
+            .OrderBy(r => r.RoundNumber)
+            .ToListAsync();
+    }
+
     public async Task<InterviewRound?> GetByDriveAndRoundNumberAsync(int driveId, int roundNumber)
     {
         return await _context.InterviewRounds

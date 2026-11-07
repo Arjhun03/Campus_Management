@@ -96,6 +96,98 @@ public class InterviewRoundService : IInterviewRoundService
         return await BuildResponseAsync(round, drive);
     }
 
+    public async Task<InterviewRoundResponse?> CreateForJobAsync(
+        int jobId,
+        CreateInterviewRoundRequest request,
+        string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+
+        if (user == null || !user.IsActive)
+        {
+            return null;
+        }
+
+        var companyHR = await _companyHRRepository.GetByUserIdAsync(userId);
+
+        if (companyHR == null || companyHR.ApprovedAt == null)
+        {
+            return null;
+        }
+
+        var job = await _jobRepository.GetByIdAsync(jobId);
+
+        if (job == null || job.CompanyId != companyHR.CompanyId)
+        {
+            return null;
+        }
+
+        var company = await _companyRepository.GetByIdAsync(companyHR.CompanyId);
+
+        if (company == null || company.Status != CompanyStatus.Active)
+        {
+            return null;
+        }
+
+        RecruitmentDrive? drive = null;
+
+        if (request.DriveId > 0)
+        {
+            drive = await _driveRepository.GetByIdAsync(request.DriveId);
+
+            if (drive == null || drive.JobId != jobId || drive.CompanyId != companyHR.CompanyId)
+            {
+                return null;
+            }
+        }
+        else
+        {
+            var drives = await _driveRepository.GetByJobIdAsync(jobId);
+
+            if (drives.Count > 0)
+            {
+                drive = drives.First();
+            }
+            else
+            {
+                drive = new RecruitmentDrive
+                {
+                    JobId = jobId,
+                    CompanyId = companyHR.CompanyId,
+                    DriveName = $"{job.JobTitle} Recruitment Drive",
+                    DriveDate = DateTime.UtcNow.AddDays(7),
+                    Venue = "Campus / Virtual",
+                    DriveMode = "Hybrid",
+                    Status = DriveStatus.Scheduled,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _driveRepository.AddAsync(drive);
+            }
+        }
+
+        var existingRound = await _roundRepository.GetByDriveAndRoundNumberAsync(drive.DriveId, request.RoundNumber);
+
+        if (existingRound != null)
+        {
+            return null;
+        }
+
+        var round = new InterviewRound
+        {
+            DriveId = drive.DriveId,
+            RoundNumber = request.RoundNumber,
+            RoundName = request.RoundName,
+            RoundType = request.RoundType,
+            Description = request.Description,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _roundRepository.AddAsync(round);
+
+        return await BuildResponseAsync(round, drive);
+    }
+
     public async Task<InterviewRoundResponse?> GetByIdAsync(
         int id,
         string currentUserId,
@@ -153,6 +245,77 @@ public class InterviewRoundService : IInterviewRoundService
             if (res != null)
             {
                 responses.Add(res);
+            }
+        }
+
+        return responses;
+    }
+
+    public async Task<List<InterviewRoundResponse>?> GetByJobIdAsync(
+        int jobId,
+        string currentUserId,
+        string role)
+    {
+        var job = await _jobRepository.GetByIdAsync(jobId);
+
+        if (job == null)
+        {
+            return null;
+        }
+
+        if (role == "CompanyHR")
+        {
+            var companyHR = await _companyHRRepository.GetByUserIdAsync(currentUserId);
+
+            if (companyHR == null || companyHR.CompanyId != job.CompanyId)
+            {
+                return null;
+            }
+        }
+        else if (role != "Admin" && role != "SuperAdmin")
+        {
+            int collegeId = 0;
+
+            if (role == "PlacementOfficer")
+            {
+                var user = await _userManager.FindByIdAsync(currentUserId);
+                var officer = await _placementOfficerRepository.GetByEmailAsync(user?.Email ?? string.Empty);
+                collegeId = officer?.CollegeId ?? 0;
+            }
+            else if (role == "Student")
+            {
+                var student = await _studentRepository.GetByUserIdAsync(currentUserId);
+                collegeId = student?.CollegeId ?? 0;
+            }
+
+            if (collegeId == 0)
+            {
+                return null;
+            }
+
+            if (!job.IsOpenToAllColleges)
+            {
+                var targets = await _targetRepository.GetByJobIdAsync(job.JobId);
+                if (!targets.Any(t => t.CollegeId == collegeId))
+                {
+                    return null;
+                }
+            }
+        }
+
+        var rounds = await _roundRepository.GetByJobIdAsync(jobId);
+        var responses = new List<InterviewRoundResponse>();
+
+        foreach (var round in rounds)
+        {
+            var drive = await _driveRepository.GetByIdAsync(round.DriveId);
+            if (drive != null)
+            {
+                var res = await BuildResponseAsync(round, drive);
+                if (res != null)
+                {
+                    responses.Add(res);
+                }
             }
         }
 

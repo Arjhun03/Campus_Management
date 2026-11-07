@@ -18,6 +18,61 @@ public class InterviewRoundsController : ControllerBase
         _roundService = roundService;
     }
 
+    [HttpPost("~/api/jobs/{jobId:int}/interview-rounds")]
+    [Authorize(Roles = "CompanyHR")]
+    public async Task<ActionResult<InterviewRoundResponse>> CreateForJob(
+        [FromRoute] int jobId,
+        [FromBody] CreateInterviewRoundRequest request)
+    {
+        var userId = GetUserId();
+
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        var response = await _roundService.CreateForJobAsync(jobId, request, userId);
+
+        if (response == null)
+        {
+            return BadRequest(new
+            {
+                message = "Unable to create interview round. Ensure the job exists and belongs to your company, and the round number is unique."
+            });
+        }
+
+        return Ok(response);
+    }
+
+    [HttpGet("~/api/jobs/{jobId:int}/interview-rounds")]
+    public async Task<ActionResult<List<InterviewRoundResponse>>> GetByJobId(
+        int jobId)
+    {
+        var currentUserId = GetUserId();
+
+        if (currentUserId == null)
+        {
+            return Unauthorized();
+        }
+
+        var role = GetRole();
+
+        var responses = await _roundService.GetByJobIdAsync(
+            jobId,
+            currentUserId,
+            role);
+
+        if (responses == null)
+        {
+            return NotFound(new
+            {
+                message = "Job not found or access denied."
+            });
+        }
+
+        return Ok(responses);
+    }
+
     [HttpPost]
     [Authorize(Roles = "CompanyHR")]
     public async Task<ActionResult<InterviewRoundResponse>> Create(
