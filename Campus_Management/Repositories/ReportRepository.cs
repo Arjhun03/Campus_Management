@@ -50,7 +50,7 @@ public class ReportRepository : IReportRepository
         var selectedPackages = await (from a in _context.JobApplications
                                       join j in _context.JobOpenings on a.JobId equals j.JobId
                                       where a.Status == ApplicationStatus.Selected && j.SalaryPackage.HasValue
-                                      select j.SalaryPackage.Value).ToListAsync();
+                                      select j.SalaryPackage ?? 0m).ToListAsync();
 
         var avgPackage = selectedPackages.Count > 0
             ? Math.Round(selectedPackages.Average(), 2)
@@ -194,7 +194,7 @@ public class ReportRepository : IReportRepository
                                     join s in _context.Students on a.StudentId equals s.StudentId
                                     join j in _context.JobOpenings on a.JobId equals j.JobId
                                     where s.CollegeId == college.CollegeId && a.Status == ApplicationStatus.Selected && j.SalaryPackage.HasValue
-                                    select j.SalaryPackage.Value).ToListAsync();
+                                    select j.SalaryPackage ?? 0m).ToListAsync();
 
         var avgPkg = placedPackages.Count > 0 ? Math.Round(placedPackages.Average(), 2) : 0m;
         var maxPkg = placedPackages.Count > 0 ? placedPackages.Max() : 0m;
