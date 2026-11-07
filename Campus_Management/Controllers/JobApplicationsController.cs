@@ -19,11 +19,16 @@ public class JobApplicationsController : ControllerBase
         _applicationService = applicationService;
     }
 
+    [HttpPost("~/api/jobs/{jobId:int}/apply")]
     [HttpPost]
     [Authorize(Roles = "Student")]
     public async Task<ActionResult<JobApplicationResponse>> Apply(
-        CreateJobApplicationRequest request)
+        [FromRoute] int? jobId,
+        [FromBody] CreateJobApplicationRequest? request)
     {
+        var targetJobId = jobId ?? request?.JobId ?? 0;
+        var remarks = request?.Remarks;
+
         var studentUserId = GetUserId();
 
         if (studentUserId == null)
@@ -31,9 +36,15 @@ public class JobApplicationsController : ControllerBase
             return Unauthorized();
         }
 
+        var req = new CreateJobApplicationRequest
+        {
+            JobId = targetJobId,
+            Remarks = remarks
+        };
+
         var response =
             await _applicationService.ApplyAsync(
-                request,
+                req,
                 studentUserId);
 
         if (response == null)
@@ -48,6 +59,7 @@ public class JobApplicationsController : ControllerBase
         return Ok(response);
     }
 
+    [HttpGet("~/api/applications/my")]
     [HttpGet("my-applications")]
     [Authorize(Roles = "Student")]
     public async Task<ActionResult<List<JobApplicationResponse>>> GetMyApplications()
@@ -66,6 +78,7 @@ public class JobApplicationsController : ControllerBase
         return Ok(response);
     }
 
+    [HttpGet("~/api/jobs/{jobId:int}/applications")]
     [HttpGet("job/{jobId:int}")]
     [Authorize(Roles = "CompanyHR,PlacementOfficer,Admin")]
     public async Task<ActionResult<List<JobApplicationResponse>>> GetApplicationsByJob(
@@ -89,6 +102,7 @@ public class JobApplicationsController : ControllerBase
         return Ok(response);
     }
 
+    [HttpGet("~/api/applications/{id:int}")]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<JobApplicationResponse>> GetById(int id)
     {
@@ -116,6 +130,74 @@ public class JobApplicationsController : ControllerBase
         }
 
         return Ok(response);
+    }
+
+    [HttpPut("~/api/applications/{id:int}/shortlist")]
+    [Authorize(Roles = "CompanyHR,Admin")]
+    public async Task<IActionResult> Shortlist(
+        int id,
+        [FromBody] UpdateApplicationStatusRequest? request)
+    {
+        var currentUserId = GetUserId();
+
+        if (currentUserId == null)
+        {
+            return Unauthorized();
+        }
+
+        var success =
+            await _applicationService.ShortlistAsync(
+                id,
+                currentUserId,
+                request?.Remarks);
+
+        if (!success)
+        {
+            return BadRequest(new
+            {
+                message =
+                    "Unable to shortlist application. Verify ownership and valid application status."
+            });
+        }
+
+        return Ok(new
+        {
+            message = "Application shortlisted successfully."
+        });
+    }
+
+    [HttpPut("~/api/applications/{id:int}/reject")]
+    [Authorize(Roles = "CompanyHR,Admin")]
+    public async Task<IActionResult> Reject(
+        int id,
+        [FromBody] UpdateApplicationStatusRequest? request)
+    {
+        var currentUserId = GetUserId();
+
+        if (currentUserId == null)
+        {
+            return Unauthorized();
+        }
+
+        var success =
+            await _applicationService.RejectAsync(
+                id,
+                currentUserId,
+                request?.Remarks);
+
+        if (!success)
+        {
+            return BadRequest(new
+            {
+                message =
+                    "Unable to reject application. Verify ownership and valid application status."
+            });
+        }
+
+        return Ok(new
+        {
+            message = "Application rejected successfully."
+        });
     }
 
     [HttpPut("{id:int}/status")]
@@ -155,6 +237,7 @@ public class JobApplicationsController : ControllerBase
         });
     }
 
+    [HttpPut("~/api/applications/{id:int}/withdraw")]
     [HttpPut("{id:int}/withdraw")]
     [Authorize(Roles = "Student")]
     public async Task<IActionResult> Withdraw(int id)

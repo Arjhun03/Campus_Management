@@ -369,6 +369,38 @@ public class JobApplicationService : IJobApplicationService
         return true;
     }
 
+    public async Task<bool> ShortlistAsync(
+        int id,
+        string currentUserId,
+        string? remarks)
+    {
+        return await UpdateStatusAsync(
+            id,
+            new UpdateApplicationStatusRequest
+            {
+                Status = ApplicationStatus.Shortlisted,
+                Remarks = remarks ?? "Candidate shortlisted."
+            },
+            currentUserId,
+            "CompanyHR");
+    }
+
+    public async Task<bool> RejectAsync(
+        int id,
+        string currentUserId,
+        string? remarks)
+    {
+        return await UpdateStatusAsync(
+            id,
+            new UpdateApplicationStatusRequest
+            {
+                Status = ApplicationStatus.Rejected,
+                Remarks = remarks ?? "Application rejected."
+            },
+            currentUserId,
+            "CompanyHR");
+    }
+
     public async Task<bool> WithdrawAsync(
         int id,
         string studentUserId)

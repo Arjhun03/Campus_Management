@@ -27,6 +27,16 @@ public interface IJobApplicationService
         string currentUserId,
         string role);
 
+    Task<bool> ShortlistAsync(
+        int id,
+        string currentUserId,
+        string? remarks);
+
+    Task<bool> RejectAsync(
+        int id,
+        string currentUserId,
+        string? remarks);
+
     Task<bool> WithdrawAsync(
         int id,
         string studentUserId);
