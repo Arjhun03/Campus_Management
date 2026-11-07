@@ -173,6 +173,9 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 
     app.MapScalarApiReference();
+
+    app.MapGet("/", () => Results.Redirect("/scalar/v1"));
+    app.MapGet("/swagger", () => Results.Redirect("/scalar/v1"));
 }
 
 app.UseRateLimiter();
