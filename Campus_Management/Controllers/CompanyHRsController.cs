@@ -39,7 +39,7 @@ public class CompanyHRsController : ControllerBase
         return Ok(response);
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,SuperAdmin")]
     [HttpGet("pending")]
     public async Task<ActionResult<List<CompanyHRResponse>>> GetPending()
     {
@@ -49,7 +49,7 @@ public class CompanyHRsController : ControllerBase
         return Ok(companyHRs);
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,SuperAdmin")]
     [HttpGet]
     public async Task<ActionResult<List<CompanyHRResponse>>> GetAll()
     {
@@ -59,7 +59,7 @@ public class CompanyHRsController : ControllerBase
         return Ok(companyHRs);
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,SuperAdmin")]
     [HttpPut("{id:int}/approve")]
     public async Task<IActionResult> Approve(int id)
     {
@@ -87,7 +87,7 @@ public class CompanyHRsController : ControllerBase
         return NoContent();
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,SuperAdmin")]
     [HttpPut("{id:int}/reject")]
     public async Task<IActionResult> Reject(int id)
     {

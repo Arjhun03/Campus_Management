@@ -147,7 +147,7 @@ public class RecruitmentDriveService : IRecruitmentDriveService
                 return null;
             }
         }
-        else if (role != "Admin")
+        else if (role != "Admin" && role != "SuperAdmin")
         {
             return null;
         }
@@ -178,7 +178,7 @@ public class RecruitmentDriveService : IRecruitmentDriveService
                 return [];
             }
         }
-        else if (role != "Admin")
+        else if (role != "Admin" && role != "SuperAdmin")
         {
             int collegeId = 0;
 
@@ -222,7 +222,7 @@ public class RecruitmentDriveService : IRecruitmentDriveService
     {
         List<RecruitmentDrive> drives;
 
-        if (role == "Admin")
+        if (role == "Admin" || role == "SuperAdmin")
         {
             drives = await _driveRepository.GetAllAsync();
         }

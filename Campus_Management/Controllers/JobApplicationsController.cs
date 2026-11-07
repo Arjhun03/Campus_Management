@@ -80,7 +80,7 @@ public class JobApplicationsController : ControllerBase
 
     [HttpGet("~/api/jobs/{jobId:int}/applications")]
     [HttpGet("job/{jobId:int}")]
-    [Authorize(Roles = "CompanyHR,PlacementOfficer,Admin")]
+    [Authorize(Roles = "CompanyHR,PlacementOfficer,Admin,SuperAdmin")]
     public async Task<ActionResult<List<JobApplicationResponse>>> GetApplicationsByJob(
         int jobId)
     {
@@ -133,7 +133,7 @@ public class JobApplicationsController : ControllerBase
     }
 
     [HttpPut("~/api/applications/{id:int}/shortlist")]
-    [Authorize(Roles = "CompanyHR,Admin")]
+    [Authorize(Roles = "CompanyHR,Admin,SuperAdmin")]
     public async Task<IActionResult> Shortlist(
         int id,
         [FromBody] UpdateApplicationStatusRequest? request)
@@ -167,7 +167,7 @@ public class JobApplicationsController : ControllerBase
     }
 
     [HttpPut("~/api/applications/{id:int}/reject")]
-    [Authorize(Roles = "CompanyHR,Admin")]
+    [Authorize(Roles = "CompanyHR,Admin,SuperAdmin")]
     public async Task<IActionResult> Reject(
         int id,
         [FromBody] UpdateApplicationStatusRequest? request)
@@ -201,7 +201,7 @@ public class JobApplicationsController : ControllerBase
     }
 
     [HttpPut("{id:int}/status")]
-    [Authorize(Roles = "CompanyHR,Admin")]
+    [Authorize(Roles = "CompanyHR,Admin,SuperAdmin")]
     public async Task<IActionResult> UpdateStatus(
         int id,
         UpdateApplicationStatusRequest request)

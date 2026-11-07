@@ -221,7 +221,7 @@ public class JobApplicationService : IJobApplicationService
 
             return filtered;
         }
-        else if (role != "Admin")
+        else if (role != "Admin" && role != "SuperAdmin")
         {
             return [];
         }
@@ -300,7 +300,7 @@ public class JobApplicationService : IJobApplicationService
                 return null;
             }
         }
-        else if (role != "Admin")
+        else if (role != "Admin" && role != "SuperAdmin")
         {
             return null;
         }
@@ -341,7 +341,7 @@ public class JobApplicationService : IJobApplicationService
                 return false;
             }
         }
-        else if (role != "Admin")
+        else if (role != "Admin" && role != "SuperAdmin")
         {
             return false;
         }

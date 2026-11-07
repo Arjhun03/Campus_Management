@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Campus_Management.Controllers;
 
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin,SuperAdmin")]
 [ApiController]
 [Route("api/[controller]")]
 public class CompaniesController : ControllerBase

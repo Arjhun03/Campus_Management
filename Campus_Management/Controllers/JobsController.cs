@@ -263,7 +263,7 @@ public class JobsController : ControllerBase
     }
 
     [HttpPost("{id:int}/target-colleges")]
-    [Authorize(Roles = "CompanyHR,Admin")]
+    [Authorize(Roles = "CompanyHR,Admin,SuperAdmin")]
     public async Task<ActionResult<JobTargetCollegeResponse>> AddTargetCollege(
         int id,
         TargetCollegeRequest request)
@@ -291,7 +291,7 @@ public class JobsController : ControllerBase
     }
 
     [HttpGet("{id:int}/target-colleges")]
-    [Authorize(Roles = "CompanyHR,Admin")]
+    [Authorize(Roles = "CompanyHR,Admin,SuperAdmin")]
     public async Task<ActionResult<List<JobTargetCollegeResponse>>> GetTargetColleges(
         int id)
     {
@@ -311,7 +311,7 @@ public class JobsController : ControllerBase
     }
 
     [HttpDelete("{id:int}/target-colleges/{collegeId:int}")]
-    [Authorize(Roles = "CompanyHR,Admin")]
+    [Authorize(Roles = "CompanyHR,Admin,SuperAdmin")]
     public async Task<IActionResult> RemoveTargetCollege(
         int id,
         int collegeId)

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Campus_Management.Controllers;
 
 [ApiController]
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin,SuperAdmin")]
 [Route("api/[controller]")]
 public class PlacementOfficersController : ControllerBase
 {

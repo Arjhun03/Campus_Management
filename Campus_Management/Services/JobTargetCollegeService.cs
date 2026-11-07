@@ -49,7 +49,7 @@ public class JobTargetCollegeService : IJobTargetCollegeService
             return null;
         }
 
-        var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+        var isAdmin = await _userManager.IsInRoleAsync(user, "Admin") || await _userManager.IsInRoleAsync(user, "SuperAdmin");
 
         if (!isAdmin)
         {
@@ -118,7 +118,7 @@ public class JobTargetCollegeService : IJobTargetCollegeService
             return [];
         }
 
-        var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+        var isAdmin = await _userManager.IsInRoleAsync(user, "Admin") || await _userManager.IsInRoleAsync(user, "SuperAdmin");
 
         if (!isAdmin)
         {
@@ -188,7 +188,7 @@ public class JobTargetCollegeService : IJobTargetCollegeService
             return false;
         }
 
-        var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+        var isAdmin = await _userManager.IsInRoleAsync(user, "Admin") || await _userManager.IsInRoleAsync(user, "SuperAdmin");
 
         if (!isAdmin)
         {

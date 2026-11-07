@@ -103,7 +103,7 @@ public class JobService : IJobService
     {
         List<JobOpening> jobs;
 
-        if (role == "Admin")
+        if (role == "Admin" || role == "SuperAdmin")
         {
             jobs = await _jobRepository.GetAllAsync();
         }
@@ -149,7 +149,7 @@ public class JobService : IJobService
             return null;
         }
 
-        if (role == "Admin")
+        if (role == "Admin" || role == "SuperAdmin")
         {
             return await BuildResponseAsync(job);
         }

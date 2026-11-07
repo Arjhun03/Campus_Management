@@ -18,7 +18,7 @@ public class StudentsController : ControllerBase
         _studentService = studentService;
     }
 
-    [Authorize(Roles = "PlacementOfficer,Admin")]
+    [Authorize(Roles = "PlacementOfficer,Admin,SuperAdmin")]
     [HttpPost("enroll")]
     public async Task<ActionResult<StudentResponse>> Enroll(
         EnrollStudentRequest request)
@@ -48,7 +48,7 @@ public class StudentsController : ControllerBase
         return Ok(response);
     }
 
-    [Authorize(Roles = "PlacementOfficer,Admin")]
+    [Authorize(Roles = "PlacementOfficer,Admin,SuperAdmin")]
     [HttpPost("bulk-enroll")]
     public async Task<ActionResult<List<StudentResponse>>> BulkEnroll(
         List<EnrollStudentRequest> requests)
@@ -77,7 +77,7 @@ public class StudentsController : ControllerBase
         return Ok(responses);
     }
 
-    [Authorize(Roles = "Admin,PlacementOfficer")]
+    [Authorize(Roles = "Admin,SuperAdmin,PlacementOfficer")]
     [HttpGet]
     public async Task<ActionResult<List<StudentResponse>>> GetAll()
     {
@@ -89,7 +89,7 @@ public class StudentsController : ControllerBase
             return Unauthorized();
         }
 
-        var isAdmin = User.IsInRole("Admin");
+        var isAdmin = User.IsInRole("Admin") || User.IsInRole("SuperAdmin");
 
         var students = isAdmin
             ? await _studentService.GetAllAsync()
@@ -98,7 +98,7 @@ public class StudentsController : ControllerBase
         return Ok(students);
     }
 
-    [Authorize(Roles = "Admin,PlacementOfficer")]
+    [Authorize(Roles = "Admin,SuperAdmin,PlacementOfficer")]
     [HttpGet("pending")]
     public async Task<ActionResult<List<StudentResponse>>> GetPending()
     {
@@ -110,7 +110,7 @@ public class StudentsController : ControllerBase
             return Unauthorized();
         }
 
-        var isAdmin = User.IsInRole("Admin");
+        var isAdmin = User.IsInRole("Admin") || User.IsInRole("SuperAdmin");
 
         var students = isAdmin
             ? await _studentService.GetPendingAsync()
@@ -138,7 +138,7 @@ public class StudentsController : ControllerBase
             User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         var isAdmin =
-            User.IsInRole("Admin");
+            User.IsInRole("Admin") || User.IsInRole("SuperAdmin");
 
         var isPlacementOfficer =
             User.IsInRole("PlacementOfficer");
@@ -162,7 +162,7 @@ public class StudentsController : ControllerBase
         return Ok(student);
     }
 
-    [Authorize(Roles = "PlacementOfficer,Admin")]
+    [Authorize(Roles = "PlacementOfficer,Admin,SuperAdmin")]
     [HttpPut("{id:int}/approve")]
     public async Task<IActionResult> Approve(int id)
     {
@@ -190,7 +190,7 @@ public class StudentsController : ControllerBase
         return NoContent();
     }
 
-    [Authorize(Roles = "PlacementOfficer,Admin")]
+    [Authorize(Roles = "PlacementOfficer,Admin,SuperAdmin")]
     [HttpPut("{id:int}/reject")]
     public async Task<IActionResult> Reject(int id)
     {
@@ -218,7 +218,7 @@ public class StudentsController : ControllerBase
         return NoContent();
     }
 
-    [Authorize(Roles = "Admin,PlacementOfficer")]
+    [Authorize(Roles = "Admin,SuperAdmin,PlacementOfficer")]
     [HttpPut("{id:int}/suspend")]
     public async Task<IActionResult> Suspend(int id)
     {
@@ -251,7 +251,7 @@ public class StudentsController : ControllerBase
         }
 
         var isAdmin =
-            User.IsInRole("Admin");
+            User.IsInRole("Admin") || User.IsInRole("SuperAdmin");
 
         var isPlacementOfficer =
             User.IsInRole("PlacementOfficer");
