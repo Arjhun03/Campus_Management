@@ -20,6 +20,7 @@ public class InterviewScheduleService : IInterviewScheduleService
     private readonly ICompanyHRRepository _companyHRRepository;
     private readonly IJobTargetCollegeRepository _targetRepository;
     private readonly IPlacementOfficerRepository _placementOfficerRepository;
+    private readonly IApplicationStatusHistoryRepository _historyRepository;
     private readonly UserManager<ApplicationUser> _userManager;
 
     public InterviewScheduleService(
@@ -34,6 +35,7 @@ public class InterviewScheduleService : IInterviewScheduleService
         ICompanyHRRepository companyHRRepository,
         IJobTargetCollegeRepository targetRepository,
         IPlacementOfficerRepository placementOfficerRepository,
+        IApplicationStatusHistoryRepository historyRepository,
         UserManager<ApplicationUser> userManager)
     {
         _scheduleRepository = scheduleRepository;
@@ -47,6 +49,7 @@ public class InterviewScheduleService : IInterviewScheduleService
         _companyHRRepository = companyHRRepository;
         _targetRepository = targetRepository;
         _placementOfficerRepository = placementOfficerRepository;
+        _historyRepository = historyRepository;
         _userManager = userManager;
     }
 
@@ -123,8 +126,19 @@ public class InterviewScheduleService : IInterviewScheduleService
 
         if (application.Status != ApplicationStatus.Interview)
         {
+            var oldStatus = application.Status;
             application.Status = ApplicationStatus.Interview;
             await _applicationRepository.UpdateAsync(application);
+
+            await _historyRepository.AddAsync(new ApplicationStatusHistory
+            {
+                ApplicationId = application.ApplicationId,
+                FromStatus = oldStatus,
+                ToStatus = ApplicationStatus.Interview,
+                ChangedByUserId = userId,
+                ChangedAt = DateTime.UtcNow,
+                Remarks = $"Scheduled for Interview Round {round.RoundNumber}: {round.RoundName}"
+            });
         }
 
         return await BuildResponseAsync(schedule, round, drive, application);

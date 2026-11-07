@@ -28,6 +28,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<RecruitmentDrive> RecruitmentDrives { get; set; } = null!;
     public DbSet<InterviewRound> InterviewRounds { get; set; } = null!;
     public DbSet<InterviewSchedule> InterviewSchedules { get; set; } = null!;
+    public DbSet<ApplicationStatusHistory> ApplicationStatusHistories { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -226,6 +227,24 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasOne<JobApplication>()
             .WithMany()
             .HasForeignKey(s => s.ApplicationId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<ApplicationStatusHistory>()
+            .HasIndex(h => h.ApplicationId);
+
+        builder.Entity<ApplicationStatusHistory>()
+            .HasIndex(h => h.ChangedAt);
+
+        builder.Entity<ApplicationStatusHistory>()
+            .HasOne<JobApplication>()
+            .WithMany()
+            .HasForeignKey(h => h.ApplicationId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<ApplicationStatusHistory>()
+            .HasOne<ApplicationUser>()
+            .WithMany()
+            .HasForeignKey(h => h.ChangedByUserId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

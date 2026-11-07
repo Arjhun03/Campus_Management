@@ -17,6 +17,7 @@ public class JobApplicationService : IJobApplicationService
     private readonly ICompanyRepository _companyRepository;
     private readonly ICollegeRepository _collegeRepository;
     private readonly IPlacementOfficerRepository _placementOfficerRepository;
+    private readonly IApplicationStatusHistoryRepository _historyRepository;
     private readonly UserManager<ApplicationUser> _userManager;
 
     public JobApplicationService(
@@ -28,6 +29,7 @@ public class JobApplicationService : IJobApplicationService
         ICompanyRepository companyRepository,
         ICollegeRepository collegeRepository,
         IPlacementOfficerRepository placementOfficerRepository,
+        IApplicationStatusHistoryRepository historyRepository,
         UserManager<ApplicationUser> userManager)
     {
         _applicationRepository = applicationRepository;
@@ -38,6 +40,7 @@ public class JobApplicationService : IJobApplicationService
         _companyRepository = companyRepository;
         _collegeRepository = collegeRepository;
         _placementOfficerRepository = placementOfficerRepository;
+        _historyRepository = historyRepository;
         _userManager = userManager;
     }
 
@@ -123,6 +126,16 @@ public class JobApplicationService : IJobApplicationService
         };
 
         await _applicationRepository.AddAsync(application);
+
+        await _historyRepository.AddAsync(new ApplicationStatusHistory
+        {
+            ApplicationId = application.ApplicationId,
+            FromStatus = null,
+            ToStatus = ApplicationStatus.Applied,
+            ChangedByUserId = studentUserId,
+            ChangedAt = DateTime.UtcNow,
+            Remarks = string.IsNullOrWhiteSpace(request.Remarks) ? "Application submitted." : request.Remarks
+        });
 
         return await BuildResponseAsync(application);
     }
@@ -333,6 +346,7 @@ public class JobApplicationService : IJobApplicationService
             return false;
         }
 
+        var oldStatus = application.Status;
         application.Status = request.Status;
 
         if (!string.IsNullOrWhiteSpace(request.Remarks))
@@ -341,6 +355,16 @@ public class JobApplicationService : IJobApplicationService
         }
 
         await _applicationRepository.UpdateAsync(application);
+
+        await _historyRepository.AddAsync(new ApplicationStatusHistory
+        {
+            ApplicationId = application.ApplicationId,
+            FromStatus = oldStatus,
+            ToStatus = request.Status,
+            ChangedByUserId = currentUserId,
+            ChangedAt = DateTime.UtcNow,
+            Remarks = request.Remarks
+        });
 
         return true;
     }
@@ -373,9 +397,20 @@ public class JobApplicationService : IJobApplicationService
             return false;
         }
 
+        var oldStatus = application.Status;
         application.Status = ApplicationStatus.Withdrawn;
 
         await _applicationRepository.UpdateAsync(application);
+
+        await _historyRepository.AddAsync(new ApplicationStatusHistory
+        {
+            ApplicationId = application.ApplicationId,
+            FromStatus = oldStatus,
+            ToStatus = ApplicationStatus.Withdrawn,
+            ChangedByUserId = studentUserId,
+            ChangedAt = DateTime.UtcNow,
+            Remarks = "Application withdrawn by candidate."
+        });
 
         return true;
     }
