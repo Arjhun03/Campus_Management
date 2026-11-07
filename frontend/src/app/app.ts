@@ -233,7 +233,49 @@ interface AuthResponse {
       <section *ngIf="activeTab() === 'colleges'">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
           <h2 style="font-size: 16px; font-weight: 600;">Colleges Directory</h2>
-          <button class="btn-secondary btn-sm" (click)="loadColleges()">🔄 Refresh</button>
+          <div style="display: flex; gap: 8px;">
+            <button *ngIf="userRole() === 'Admin'" class="btn-primary btn-sm" (click)="showAddCollegeModal.set(!showAddCollegeModal())">
+              ➕ Add College
+            </button>
+            <button class="btn-secondary btn-sm" (click)="loadColleges()">🔄 Refresh</button>
+          </div>
+        </div>
+
+        <!-- Add College Form Card (Admin Only) -->
+        <div *ngIf="showAddCollegeModal() && userRole() === 'Admin'" class="card" style="background: #f8fafc; border-left: 4px solid #2563eb; margin-bottom: 16px;">
+          <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: #0f172a;">Register New College</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 14px;">
+            <div>
+              <label style="font-size: 11px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">College Name *</label>
+              <input [(ngModel)]="newCollegeName" placeholder="e.g. National Institute of Technology" style="width: 100%;" />
+            </div>
+            <div>
+              <label style="font-size: 11px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">City *</label>
+              <input [(ngModel)]="newCollegeCity" placeholder="e.g. Trichy" style="width: 100%;" />
+            </div>
+            <div>
+              <label style="font-size: 11px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Email</label>
+              <input [(ngModel)]="newCollegeEmail" type="email" placeholder="e.g. info@nit.edu" style="width: 100%;" />
+            </div>
+            <div>
+              <label style="font-size: 11px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Phone Number</label>
+              <input [(ngModel)]="newCollegePhone" placeholder="e.g. +91 9876543210" style="width: 100%;" />
+            </div>
+          </div>
+          <div style="margin-bottom: 14px;">
+            <label style="font-size: 11px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Address</label>
+            <input [(ngModel)]="newCollegeAddress" placeholder="Full campus address" style="width: 100%;" />
+          </div>
+
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="btn-primary" (click)="createCollege()" [disabled]="collegeSaving()">
+              {{ collegeSaving() ? 'Saving College...' : 'Save College' }}
+            </button>
+            <button class="btn-secondary" (click)="showAddCollegeModal.set(false)">Cancel</button>
+            <span *ngIf="collegeError()" style="color: #dc2626; font-size: 12px; font-weight: 500;">
+              ⚠️ {{ collegeError() }}
+            </span>
+          </div>
         </div>
 
         <div class="card table-responsive">
@@ -242,23 +284,27 @@ interface AuthResponse {
               <tr>
                 <th>ID</th>
                 <th>College Name</th>
-                <th>Code</th>
-                <th>City / State</th>
+                <th>City</th>
+                <th>Address</th>
                 <th>Status</th>
+                <th *ngIf="userRole() === 'Admin'">Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let c of colleges()">
                 <td>#{{ c.collegeId }}</td>
                 <td style="font-weight: 600;">{{ c.collegeName }}</td>
-                <td><code>{{ c.collegeCode }}</code></td>
-                <td>{{ c.city }}, {{ c.state }}</td>
+                <td>{{ c.city }}</td>
+                <td>{{ c.address || '—' }}</td>
                 <td>
                   <span class="badge badge-green">{{ c.status === 1 ? 'Active' : 'Pending' }}</span>
                 </td>
+                <td *ngIf="userRole() === 'Admin'">
+                  <button class="btn-danger btn-sm" (click)="deleteCollege(c.collegeId)">Delete</button>
+                </td>
               </tr>
               <tr *ngIf="colleges().length === 0">
-                <td colspan="5" style="text-align: center; color: #64748b; padding: 20px;">No colleges loaded.</td>
+                <td [attr.colspan]="userRole() === 'Admin' ? 6 : 5" style="text-align: center; color: #64748b; padding: 20px;">No colleges loaded.</td>
               </tr>
             </tbody>
           </table>
@@ -538,6 +584,14 @@ export class App {
   companyReport = signal<any>(null);
 
   colleges = signal<any[]>([]);
+  showAddCollegeModal = signal(false);
+  newCollegeName = '';
+  newCollegeCity = '';
+  newCollegeAddress = '';
+  newCollegePhone = '';
+  newCollegeEmail = '';
+  collegeSaving = signal(false);
+  collegeError = signal('');
   companies = signal<any[]>([]);
   jobs = signal<any[]>([]);
   selectedJobRounds = signal<any[] | null>(null);
@@ -653,6 +707,48 @@ export class App {
   loadColleges() {
     this.http.get<any[]>(`${this.apiUrl()}/api/colleges`, { headers: this.getHeaders() })
       .subscribe({ next: (data) => this.colleges.set(data), error: () => this.colleges.set([]) });
+  }
+
+  createCollege() {
+    if (!this.newCollegeName || !this.newCollegeCity) {
+      this.collegeError.set('College Name and City are required.');
+      return;
+    }
+
+    this.collegeSaving.set(true);
+    this.collegeError.set('');
+
+    this.http.post(`${this.apiUrl()}/api/colleges`, {
+      collegeName: this.newCollegeName,
+      city: this.newCollegeCity,
+      address: this.newCollegeAddress,
+      phoneNumber: this.newCollegePhone,
+      email: this.newCollegeEmail
+    }, { headers: this.getHeaders() }).subscribe({
+      next: () => {
+        this.collegeSaving.set(false);
+        this.showAddCollegeModal.set(false);
+        this.newCollegeName = '';
+        this.newCollegeCity = '';
+        this.newCollegeAddress = '';
+        this.newCollegePhone = '';
+        this.newCollegeEmail = '';
+        this.loadColleges();
+      },
+      error: (err) => {
+        this.collegeSaving.set(false);
+        this.collegeError.set(err.error?.message || 'Failed to create college.');
+      }
+    });
+  }
+
+  deleteCollege(collegeId: number) {
+    if (!confirm(`Are you sure you want to delete College #${collegeId}?`)) return;
+    this.http.delete(`${this.apiUrl()}/api/colleges/${collegeId}`, { headers: this.getHeaders() })
+      .subscribe({
+        next: () => this.loadColleges(),
+        error: (err) => alert(err.error?.message || 'Failed to delete college.')
+      });
   }
 
   loadCompanies() {
