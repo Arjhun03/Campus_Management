@@ -7,7 +7,6 @@ public class CreateInterviewScheduleRequest
     [Required]
     public int RoundId { get; set; }
 
-    [Required]
     public int ApplicationId { get; set; }
 
     [Required]

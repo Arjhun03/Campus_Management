@@ -18,15 +18,30 @@ public class InterviewSchedulesController : ControllerBase
         _scheduleService = scheduleService;
     }
 
+    [HttpPost("~/api/applications/{applicationId:int}/interviews")]
     [HttpPost]
     [Authorize(Roles = "CompanyHR")]
     public async Task<ActionResult<InterviewScheduleResponse>> Create(
-        CreateInterviewScheduleRequest request)
+        [FromRoute] int? applicationId,
+        [FromBody] CreateInterviewScheduleRequest request)
     {
         var userId = GetUserId();
         if (userId == null)
         {
             return Unauthorized();
+        }
+
+        if (applicationId.HasValue && applicationId.Value > 0)
+        {
+            request.ApplicationId = applicationId.Value;
+        }
+
+        if (request.ApplicationId <= 0)
+        {
+            return BadRequest(new
+            {
+                message = "ApplicationId is required."
+            });
         }
 
         var response = await _scheduleService.CreateAsync(request, userId);
@@ -42,6 +57,7 @@ public class InterviewSchedulesController : ControllerBase
         return Ok(response);
     }
 
+    [HttpGet("~/api/interviews/{id:int}")]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<InterviewScheduleResponse>> GetById(int id)
     {
@@ -80,6 +96,7 @@ public class InterviewSchedulesController : ControllerBase
         return Ok(responses);
     }
 
+    [HttpGet("~/api/applications/{applicationId:int}/interviews")]
     [HttpGet("application/{applicationId:int}")]
     public async Task<ActionResult<List<InterviewScheduleResponse>>> GetByApplicationId(int applicationId)
     {
@@ -110,6 +127,7 @@ public class InterviewSchedulesController : ControllerBase
         return Ok(responses);
     }
 
+    [HttpPut("~/api/interviews/{id:int}")]
     [HttpPut("{id:int}")]
     [Authorize(Roles = "CompanyHR")]
     public async Task<IActionResult> Update(int id, UpdateInterviewScheduleRequest request)
@@ -136,6 +154,7 @@ public class InterviewSchedulesController : ControllerBase
         });
     }
 
+    [HttpPut("~/api/interviews/{id:int}/feedback")]
     [HttpPut("{id:int}/feedback")]
     [Authorize(Roles = "CompanyHR")]
     public async Task<IActionResult> SubmitFeedback(int id, InterviewFeedbackRequest request)
@@ -162,6 +181,7 @@ public class InterviewSchedulesController : ControllerBase
         });
     }
 
+    [HttpDelete("~/api/interviews/{id:int}")]
     [HttpDelete("{id:int}")]
     [Authorize(Roles = "CompanyHR")]
     public async Task<IActionResult> Delete(int id)
