@@ -27,6 +27,10 @@ public interface IRecruitmentDriveService
         UpdateRecruitmentDriveRequest request,
         string userId);
 
+    Task<bool> CancelAsync(
+        int id,
+        string userId);
+
     Task<bool> DeleteAsync(
         int id,
         string userId);

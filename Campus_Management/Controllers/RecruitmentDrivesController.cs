@@ -151,6 +151,36 @@ public class RecruitmentDrivesController : ControllerBase
         });
     }
 
+    [HttpPut("{id:int}/cancel")]
+    [Authorize(Roles = "CompanyHR")]
+    public async Task<IActionResult> Cancel(int id)
+    {
+        var userId = GetUserId();
+
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        var cancelled =
+            await _driveService.CancelAsync(
+                id,
+                userId);
+
+        if (!cancelled)
+        {
+            return BadRequest(new
+            {
+                message = "Unable to cancel recruitment drive. Verify ownership and that the drive is not already completed or cancelled."
+            });
+        }
+
+        return Ok(new
+        {
+            message = "Recruitment drive cancelled successfully."
+        });
+    }
+
     [HttpDelete("{id:int}")]
     [Authorize(Roles = "CompanyHR")]
     public async Task<IActionResult> Delete(int id)

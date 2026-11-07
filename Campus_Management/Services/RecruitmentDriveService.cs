@@ -319,6 +319,39 @@ public class RecruitmentDriveService : IRecruitmentDriveService
         return true;
     }
 
+    public async Task<bool> CancelAsync(
+        int id,
+        string userId)
+    {
+        var drive = await _driveRepository.GetByIdAsync(id);
+
+        if (drive == null)
+        {
+            return false;
+        }
+
+        var companyHR =
+            await _companyHRRepository.GetByUserIdAsync(userId);
+
+        if (companyHR == null ||
+            companyHR.CompanyId != drive.CompanyId)
+        {
+            return false;
+        }
+
+        if (drive.Status == DriveStatus.Completed ||
+            drive.Status == DriveStatus.Cancelled)
+        {
+            return false;
+        }
+
+        drive.Status = DriveStatus.Cancelled;
+
+        await _driveRepository.UpdateAsync(drive);
+
+        return true;
+    }
+
     public async Task<bool> DeleteAsync(
         int id,
         string userId)
