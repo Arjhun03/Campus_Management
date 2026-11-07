@@ -82,6 +82,9 @@ builder.Services.AddScoped<IInterviewScheduleService, InterviewScheduleService>(
 builder.Services.AddScoped<IApplicationStatusHistoryRepository, ApplicationStatusHistoryRepository>();
 builder.Services.AddScoped<IApplicationStatusHistoryService, ApplicationStatusHistoryService>();
 
+builder.Services.AddScoped<IReportRepository, ReportRepository>();
+builder.Services.AddScoped<IReportService, ReportService>();
+
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
